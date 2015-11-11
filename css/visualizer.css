@@ -1,0 +1,28 @@
+.visualizer-geoviewer{
+    height: 100%;
+    width: 100%;
+    z-index: -1;
+    position: absolute;
+}
+.visualizer-legend{
+    height: 8%;
+    width: 50%;
+    z-index: 1;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    position: absolute;
+}
+#visualizer-legend-canvas{
+    margin: auto;
+    display: block;
+}
+.visualizer-customize{
+    width: 400px;
+    display:block;
+    margin: auto;
+}
+.visualizer-customize-range{
+    width:20%;
+}

@@ -1,0 +1,36 @@
+{
+  "Variables": {
+    "Electricity":"kWh",
+    "Electricity Cost":"$",
+    "Steam":"kWh",
+    "Steam Value":"$",
+    "Natural Gas":"kWh",
+    "Natural Gas Cost":"$",
+    "Water":"m3",
+    "Water Cost":"$",
+    "Total Cost":"$",
+    "Total GHG Emission":"kg CO2"
+  },
+  "Custom_Properties": [
+      "Abbreviation",
+      "Floor Area",
+      "Occupancy",
+      "Year Built"
+    ],
+  "Normalization":{
+	  "Occupancy": "Occupancy",
+      "Floor Area": "Floor Area"
+	},
+  "Electricity":{
+    "Annual":{
+      "Settings":{
+        "RealTime" : false
+      },
+      "Data":{
+        "5":{
+          "url": "SampleData/continuous_data/5_electricity_annual.json"
+        }
+      }
+    }
+  }
+}

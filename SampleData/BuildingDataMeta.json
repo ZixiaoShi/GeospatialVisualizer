@@ -1,0 +1,59 @@
+{
+  "Variables": {
+    "Electricity":"kWh",
+    "Electricity Cost":"$",
+    "Steam":"kWh",
+    "Steam Value":"$",
+    "Natural Gas":"kWh",
+    "Natural Gas Cost":"$",
+    "Water":"m3",
+    "Water Cost":"$",
+    "Total Cost":"$",
+    "Total GHG Emission":"kg CO2"
+  },
+  "DataSet":{
+	  "2014":{
+		  "url":"SampleData/continuous_data/2014.json"
+	  },
+	  "2014-01":{
+		  "url":"SampleData/continuous_data/2014-01.json"
+	  },
+	  "2014-02":{
+		  "url":"SampleData/continuous_data/2014-02.json"
+	  },
+	  "2014-03":{
+		  "url":"SampleData/continuous_data/2014-03.json"
+	  },
+	  "2014-04":{
+		  "url":"SampleData/continuous_data/2014-04.json"
+	  },
+	  "2014-05":{
+		  "url":"SampleData/continuous_data/2014-05.json"
+	  },
+	  "2014-06":{
+		  "url":"SampleData/continuous_data/2014-06.json"
+	  },
+	  "2014-07":{
+		  "url":"SampleData/continuous_data/2014-07.json"
+	  },
+	  "2014-08":{
+		  "url":"SampleData/continuous_data/2014-08.json"
+	  },
+	  "2014-09":{
+		  "url":"SampleData/continuous_data/2014-09.json"
+	  },
+	  "2014-10":{
+		  "url":"SampleData/continuous_data/2014-10.json"
+	  },
+	  "2014-11":{
+		  "url":"SampleData/continuous_data/2014-11.json"
+	  },
+	  "2014-12":{
+		  "url":"SampleData/continuous_data/2014-12.json"
+	  }
+  },
+  "Attributes":{
+  "BuildCode": "Building Code",
+  "BuildAbbrev": "Building Abbrevation",
+  "BuildArea": "Building Area"}
+}
