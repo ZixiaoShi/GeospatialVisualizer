@@ -32,31 +32,36 @@ function(
 	var DatasetCollection = function(){
 		this.values = [];
 		this.position = 0;
-		this.getCurrentDataset = function(){return this.values[this.position]};
+		this.getCurrentDataset = function(variable){return this.values[variable.name][this.position]};
 
-		this.nextDataset = function(){
+		this.nextDataset = function(variable){
 			if(this.position < this.values.length){
 				this.values += 1;
-				return this.getCurrentDataset();
+				return this.getCurrentDataset(variable);
 			}
 			else{
-				return this.getCurrentDataset();
+				return this.getCurrentDataset(variable);
 			}
 		};
 
 		this.previousDataSet = function(){
 			if(this.position > 0 ){
 				this.values -= 1;
-				return this.getCurrentDataset();
+				return this.getCurrentDataset(variable);
 			}
 			else{
-				return this.getCurrentDataset();
+				return this.getCurrentDataset(variable);
 			}
 		};
 
-		this.addDataset = function(dataset){
+		this.addDataset = function(dataset, variable){
 			if (dataset instanceof Dataset){
-				this.values.push(dataset);
+				if (!this.values[variable.name]){
+					this.values[variable.name] = [dataset];
+				}
+				else{
+					this.values[variable.name].push(dataset);
+				}
 			}
 			else{
 				console.warn("Cannot add Dataset, it is not an instance of Dataset");

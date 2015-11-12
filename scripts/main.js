@@ -29,7 +29,10 @@ require(['visualizer', 'jquery','spectrum'],function(visualizer, $,spectrum){
     var vis = new visualizer.Visualizer('#GeospatialContainer');
     //console.log(vis._geospatialSection.viewer.clock.currentTime);
     //vis.LoadMeta("SampleData/BuildingDataMeta.json");
-    vis.LoadEntities("SampleData/CarletonCampus.geojson",'geojson',true);
+    //vis.LoadEntities("SampleData/CarletonCampus.geojson",'geojson',true);
+    //vis.LoadMeta("SampleData/CarletonMeta.json");
+    //vis.readCurrentTimeSeries();
+    vis.initiate("SampleData/CarletonCampus.geojson",'geojson',true, "SampleData/CarletonMeta.json");
 });
 
 

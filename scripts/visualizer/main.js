@@ -48,6 +48,12 @@ define([
             self._geospatialSection = new GeospatialSection.GeospatialSection(this.geospatialcontainer);
         }
 
+        this.initiate = function(geojsonURL,fileFormat, extrudeBool, metaUrl){
+            this.LoadEntities(geojsonURL,fileFormat, extrudeBool);
+            this.LoadMeta(metaUrl);
+            //self.readCurrentTimeSeries();
+        };
+
         this.LoadEntities = function(geojsonURL,fileFormat, extrudeBool){
             var dataSource;
             if (fileFormat == 'geojson'){
@@ -79,6 +85,32 @@ define([
             });
         };
 
+        this.LoadMeta = function(metaURL) {
+            $.getJSON(metaURL,
+                function(meta) {
+                    var variables = meta["Variables"];
+                    $.each(variables, function(key,value){
+                        //Create variable and append to default variable set
+                        var variable = new models.Variable(key, value);
+                        self._defaultVariableCollection.addVariable(variable);
+                        //if there is dataset for a variable, add it to dataset collection
+                        if (meta[key]){
+                            var datasets = meta[key];
+                            for (var datasetName in meta[key]){
+                                var dataset = new models.Dataset(datasetName, datasets[datasetName].Settings);
+                                for (var dataid in datasets[datasetName].Data){
+                                    dataset.adddata(dataid, datasets[datasetName].Data[dataid]["url"]);
+                                }
+                                self._defaultDatasetCollection.addDataset(dataset, variable);
+                            }
+                        }
+                    });
+                }).then(function(){
+                console.log(self._defaultDatasetCollection);
+                console.log(self._defaultVariableCollection);
+            });
+        };
+
         this.setTimeLine = function(startTime, endTime, speed){
             self._geospatialSection.viewer.timeline.zoomTo(startTime, endTime);
             self._geospatialSection.viewer.clock.startTime = startTime;
@@ -94,12 +126,30 @@ define([
             1000
         );
 
+        this.readTimeSeriesFromURL = function(dataset, variable){
+          for (var id in dataset.data){
+              $.getJSON(dataset.data[id], function(data){
+                  var entity = self._defaultEntityCollection.getById(id);
+                  addTimeSeries(entity, variable, data);
+              });
+              self.readCurrentTimeSeries();
+          }
+        };
+
+        this.readCurrentTimeSeries = function(){
+            var variable = self._defaultVariableCollection.getCurrentVariable();
+            console.log(variable);
+            var dataset = self._defaultDatasetCollection.getCurrentDataset(variable);
+            self.readTimeSeriesFromURL(dataset, variable);
+            console.log(self._defaultEntityCollection);
+        };
+
         function addTimeSeries(entity, variable, timeseries){
             var sampled = new Cesium.SampledProperty(Number);
             for (var key in timeseries){
                 sampled.addSample(Cesium.JulianDate.fromIso8601(key),timeseries[key]);
             }
-            entity[variable.name] = sampled;
+            entity['values'][variable.name] = sampled;
         }
 
         //Some worker functions for main.js
