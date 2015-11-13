@@ -14,7 +14,8 @@ function(
 
     var customizeEntity = function(entity){
         entity.addProperty("Value");
-        entity.properties.Values = undefined;
+        entity.addProperty("values");
+        entity.properties.values = {};
         entity.label = new Cesium.LabelGraphics({
             text: entity.name
         });
@@ -26,13 +27,19 @@ function(
 		this.data = {};
 		this.adddata = function(id, url){
 			this.data[id] = url;
+		};
+		this.getdata = function(id){
+			return this.data[id];
 		}
 	};
 
 	var DatasetCollection = function(){
-		this.values = [];
+		this.values = {};
 		this.position = 0;
-		this.getCurrentDataset = function(variable){return this.values[variable.name][this.position]};
+		this.getCurrentDataset = function(variable){
+			//console.log(self.values);
+			return this.values[variable.name][this.position]
+		};
 
 		this.nextDataset = function(variable){
 			if(this.position < this.values.length){
@@ -82,11 +89,14 @@ function(
 	var VariableCollection = function(){
 		this.values = [];
 		this.position = 0;
-		this.getCurrentVariable = function(){return this.values[this.position]};
+		this.getCurrentVariable = function(){
+			//console.log(this.values);
+			//console.log(this.values[0]);
+			return this.values[this.position]};
 
 		this.nextVairable = function(){
 			if(this.position < this.values.length){
-				this.values += 1;
+				this.position += 1;
 				return this.getCurrentVariable();
 			}
 			else{
@@ -96,13 +106,13 @@ function(
 
 		this.previousVariable = function(){
 			if(this.position > 0 ){
-				this.values -= 1;
+				this.position -= 1;
 				return this.getCurrentVariable();
 			}
 			else{
 				return this.getCurrentVariable();
 			}
-		}
+		};
 
 		this.addVariable = function(variable){
 			if (variable instanceof Variable){
@@ -112,10 +122,6 @@ function(
 				console.warn("Cannot add Variable, it is not an instance of Variable");
 			}
 		};
-
-		this.getVariable = function(name){
-			return getByName(this.values, name);
-		}
 	};
 
 

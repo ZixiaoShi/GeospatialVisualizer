@@ -1,10 +1,12 @@
 define([
+    'jquery',
     'Cesium',
     './template',
     './3dviewer',
     './models',
     './utilities'
 ],function(
+    $,
     Cesium,
     template,
     GeospatialSection,
@@ -26,7 +28,7 @@ define([
         this._defaultRangeMax = 0.0;
         this.customRangeMin = 0.0;
         this.customRangeMax = 0.0;
-        this._defaultEntityCollection = new Cesium.EntityCollection();
+        this._defaultEntityCollection = {};
 
         this._startColor = '0AF229';
         this._endColor = 'F20505';
@@ -49,9 +51,20 @@ define([
         }
 
         this.initiate = function(geojsonURL,fileFormat, extrudeBool, metaUrl){
-            this.LoadEntities(geojsonURL,fileFormat, extrudeBool);
-            this.LoadMeta(metaUrl);
-            //self.readCurrentTimeSeries();
+            $.when(LoadEntities(geojsonURL,fileFormat, extrudeBool)).done(function(){
+               self.LoadMeta(metaUrl);
+            });
+            /*
+            $.when(this.LoadEntities(geojsonURL,fileFormat, extrudeBool)).done(
+                function(){
+                    $.when(self.LoadMeta(metaUrl)).done(function(){
+                        //console.log(self._defaultVariableCollection);
+                        //console.log(self._defaultDatasetCollection);
+                        self.readCurrentTimeSeries();
+                        //console.log(self._defaultEntityCollection);
+                    });
+                });
+                */
         };
 
         this.LoadEntities = function(geojsonURL,fileFormat, extrudeBool){
@@ -64,10 +77,10 @@ define([
             }
             else{
                 console.warn("Data source has to be geojson or kml format!");
-                return;
+                return dfd;
             }
-            dataSource.load(geojsonURL).then(function(datasource){
-                console.log('read datasource finished!');
+            return dataSource.load(geojsonURL).then(function(datasource){
+                //console.log('read datasource finished!');
                 self._geospatialSection.viewer.dataSources.add(datasource);
                 self._geospatialSection.viewer.flyTo(datasource.entities);
                 var entities = datasource.entities;
@@ -75,18 +88,25 @@ define([
                 for (var i=0; i < datasource.entities.values.length; i++){
                     var entity = entities.values[i];
                     models.customizeEntity(entity);
-                    self._defaultEntityCollection.add(entity)
+                    if (!self._defaultEntityCollection[entity.properties.Id]){
+                        self._defaultEntityCollection[entity.properties.Id] = [entity];
+                    }
+                    else{
+                        self._defaultEntityCollection[entity.properties.Id].push(entity);
+                    }
                     if (extrudeBool == true){
                         GeospatialSection.extrudeEntity(entity);
                     }
                 }
-                console.log(entities);
+                //console.log(entities);
+                //console.log(self._defaultEntityCollection);
                 entities.resumeEvents();
+                //return dfd;;
             });
         };
 
         this.LoadMeta = function(metaURL) {
-            $.getJSON(metaURL,
+            return $.getJSON(metaURL,
                 function(meta) {
                     var variables = meta["Variables"];
                     $.each(variables, function(key,value){
@@ -105,7 +125,11 @@ define([
                             }
                         }
                     });
-                }).then(function(){
+                }).done(function(){
+                $.when(self.readCurrentTimeSeries()).done(function(){
+                    console.log("start drawing");
+                    self._dataDrawn = true;
+                });
                 console.log(self._defaultDatasetCollection);
                 console.log(self._defaultVariableCollection);
             });
@@ -127,29 +151,43 @@ define([
         );
 
         this.readTimeSeriesFromURL = function(dataset, variable){
+            var dfd = $.Deferred();
+            console.log(self._defaultEntityCollection);
           for (var id in dataset.data){
               $.getJSON(dataset.data[id], function(data){
-                  var entity = self._defaultEntityCollection.getById(id);
-                  addTimeSeries(entity, variable, data);
+                  $.each(self._defaultEntityCollection[id], function(key, entity){
+                      //console.log(entity);
+                      addTimeSeries(entity, variable, data);
+                  });
               });
-              self.readCurrentTimeSeries();
           }
+            self._dataDrawn = true;
+            return dfd.promise();
         };
 
         this.readCurrentTimeSeries = function(){
+            var dfd = $.Deferred();
+            //console.log(self._defaultVariableCollection);
+            //console.log(self._defaultDatasetCollection);
             var variable = self._defaultVariableCollection.getCurrentVariable();
-            console.log(variable);
-            var dataset = self._defaultDatasetCollection.getCurrentDataset(variable);
+            //console.log(variable);
+            var dataset = this._defaultDatasetCollection.getCurrentDataset(variable);
             self.readTimeSeriesFromURL(dataset, variable);
-            console.log(self._defaultEntityCollection);
+            //console.log(self._defaultDatasetCollection.values);
+            //console.log(self._defaultDatasetCollection.values[0]);
+            //console.log(this._defaultEntityCollection);
+            return dfd.promise();
         };
 
         function addTimeSeries(entity, variable, timeseries){
+            //console.log(entity);
             var sampled = new Cesium.SampledProperty(Number);
+            sampled.forwardExtrapolationType = Cesium.ExtrapolationType.HOLD;
             for (var key in timeseries){
                 sampled.addSample(Cesium.JulianDate.fromIso8601(key),timeseries[key]);
             }
-            entity['values'][variable.name] = sampled;
+            entity.properties['values'][variable.name] = sampled;
+            console.log(entity);
         }
 
         //Some worker functions for main.js
@@ -176,6 +214,33 @@ define([
             ctx.textAlign = "right";
             ctx.fillText(rangeMax,399,60);
             console.log("legend draw complete");
+        }
+
+        var helper = new Cesium.EventHelper();
+        helper.add(this._geospatialSection.viewer.clock.onTick, tickUpdate, this);
+
+        function tickUpdate(){
+            if (this._dataDrawn == false){
+                return;
+            }
+            //console.log(this.viewer.clock.currentTime);
+            //console.log(this._geospatialSection.viewer.entities.values);
+            this._geospatialSection.viewer.entities.suspendEvents();
+            $.each(this._defaultEntityCollection, function(key, entities){
+                for (var i = 0; i< entities.length; i++){
+                    var entity = entities[i];
+                    if (!entity.properties.values["Electricity"]){continue;}
+                    var newvalue = entity.properties.values["Electricity"].getValue(self._geospatialSection.viewer.clock.currentTime);
+                    //console.log(newvalue);
+                    if (entity.properties.value !== newvalue){
+                        //console.log(newvalue);
+                        entity.properties.value = newvalue;
+                        //console.log(entity);
+                    }
+                }
+
+            });
+            this._geospatialSection.viewer.entities.resumeEvents();
         }
     };
     return{
