@@ -22,13 +22,37 @@
       "Floor Area": "Floor Area"
 	},
   "Electricity":{
-    "Annual":{
+    "Monthly":{
       "Settings":{
         "RealTime" : false
       },
       "Data":{
         "5":{
-          "url": "SampleData/continuous_data/5_electricity_annual.json"
+          "url": "SampleData/continuous_data/5_electricity_month.json"
+        },
+        "6":{
+          "url": "SampleData/continuous_data/6_electricity_month.json"
+        },
+        "14":{
+          "url": "SampleData/continuous_data/14_electricity_month.json"
+        },
+        "18":{
+          "url": "SampleData/continuous_data/18_electricity_month.json"
+        },
+        "26":{
+          "url": "SampleData/continuous_data/26_electricity_month.json"
+        },
+        "30":{
+          "url": "SampleData/continuous_data/30_electricity_month.json"
+        },
+        "34":{
+          "url": "SampleData/continuous_data/34_electricity_month.json"
+        },
+        "41":{
+          "url": "SampleData/continuous_data/41_electricity_month.json"
+        },
+        "44":{
+          "url": "SampleData/continuous_data/44_electricity_month.json"
         }
       }
     }

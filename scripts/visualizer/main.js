@@ -144,26 +144,36 @@ define([
             self._geospatialSection.viewer.clock.clockRange = Cesium.ClockRange.CLAMPED;
         };
 
+        this.updateTimeLineEnd = function(endTime){
+            self._geospatialSection.viewer.clock.stopTime = endTime;
+        };
+
         this.setTimeLine(
-            new Cesium.JulianDate.fromIso8601('2015-01-01'),
-            new Cesium.JulianDate.fromIso8601('2015-02-01'),
-            1000
+            new Cesium.JulianDate.fromIso8601('2014-01-01'),
+            new Cesium.JulianDate.fromIso8601('2015-06-01'),
+            5000
         );
 
         this.readTimeSeriesFromURL = function(dataset, variable){
             var dfd = $.Deferred();
             console.log(self._defaultEntityCollection);
           for (var id in dataset.data){
-              $.getJSON(dataset.data[id], function(data){
-                  $.each(self._defaultEntityCollection[id], function(key, entity){
-                      //console.log(entity);
-                      addTimeSeries(entity, variable, data);
-                  });
-              });
+              var url = dataset.data[id]
+              readJsonTimeSeries(id, url, variable);
           }
             self._dataDrawn = true;
             return dfd.promise();
         };
+
+        function readJsonTimeSeries(id, url, variable){
+            $.getJSON(url, function(data){
+                //console.log(self._defaultEntityCollection[id]);
+                $.each(self._defaultEntityCollection[id], function(key, entity){
+                    addTimeSeries(entity, variable, data);
+                    //console.log(entity);
+                });
+            });
+        }
 
         this.readCurrentTimeSeries = function(){
             var dfd = $.Deferred();
@@ -181,13 +191,37 @@ define([
 
         function addTimeSeries(entity, variable, timeseries){
             //console.log(entity);
+            var sampled = new Cesium.TimeIntervalCollectionProperty();
+            var pos = 0;
+            //console.log(timeseries.length);
+            $.each(timeseries, function(key, values){
+                //console.log(key);
+               sampled.intervals.addInterval(Cesium.TimeInterval.fromIso8601({
+                   iso8601: key,
+                   isStartIncluded: true,
+                   isStopIncluded: false,
+                   data: values[variable.name].replace(',', '')
+               }));
+            });
+            /*
             var sampled = new Cesium.SampledProperty(Number);
+            sampled.backwardExtrapolationDuration = 1;
             sampled.forwardExtrapolationType = Cesium.ExtrapolationType.HOLD;
+
+            sampled.setInterpolationOptions({
+                interpolationAlgorithm: Cesium.LinearApproximation,
+                interpolationDegree: 0
+            });
+
+            //sampled.definitionChanged.addEventListener(console.log("new value"));
             for (var key in timeseries){
-                sampled.addSample(Cesium.JulianDate.fromIso8601(key),timeseries[key]);
+                sampled.addSample(Cesium.JulianDate.fromIso8601(key),
+                    parseFloat(timeseries[key][variable.name].replace(',', '')));
             }
+            */
             entity.properties['values'][variable.name] = sampled;
-            console.log(entity);
+            //console.log(sampled[0]);
+            //console.log(entity);
         }
 
         //Some worker functions for main.js
@@ -225,7 +259,7 @@ define([
             }
             //console.log(this.viewer.clock.currentTime);
             //console.log(this._geospatialSection.viewer.entities.values);
-            this._geospatialSection.viewer.entities.suspendEvents();
+            self._geospatialSection.viewer.entities.suspendEvents();
             $.each(this._defaultEntityCollection, function(key, entities){
                 for (var i = 0; i< entities.length; i++){
                     var entity = entities[i];
@@ -233,14 +267,68 @@ define([
                     var newvalue = entity.properties.values["Electricity"].getValue(self._geospatialSection.viewer.clock.currentTime);
                     //console.log(newvalue);
                     if (entity.properties.value !== newvalue){
+                        //console.log(self._defaultRangeMax);
                         //console.log(newvalue);
                         entity.properties.value = newvalue;
+                        if (newvalue > self._defaultRangeMax && $('#constantRange').prop('checked')==false){
+                            self._defaultRangeMax = utilities.roundUp(newvalue,1);
+                            updateEntityColors();
+                        }
+                        else{
+                            colorEntity(entity);
+                        }
                         //console.log(entity);
                     }
                 }
 
             });
-            this._geospatialSection.viewer.entities.resumeEvents();
+            self._geospatialSection.viewer.entities.suspendEvents();
+        }
+
+        function updateEntityColors(){
+            self._geospatialSection.viewer.entities.suspendEvents();
+            $.each(self._defaultEntityCollection, function(key, entities){
+                $.each(entities, function(id, entity){
+                    colorEntity(entity);
+                })
+            });
+            self._geospatialSection.viewer.entities.suspendEvents();
+            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+        }
+
+        function colorEntity(entity){
+            var weight = (entity.properties.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
+            entity.properties.color =  utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
+            entity.polygon.material = Cesium.Color.fromCssColorString("#"+ entity.properties.color);
+            //entity.polygon.material = Cesium.Color.RED;
+        }
+
+        //Some worker functions for main.js
+        //Some worker functions for main.js
+        function updateColor(){
+            console.log("color changed!");
+            self._startColor = self._startColorPicker.spectrum('get').toHex();
+            self._endColor = self._endColorPicker.spectrum('get').toHex();
+            updateEntityColors();
+        }
+
+        function drawLegend(colorMin, colorMax, rangeMin, rangeMax){
+            var ctx = document.getElementById("visualizer-legend-canvas").getContext("2d");
+            ctx.clearRect(0, 0, 400, 70);
+            var grd = ctx.createLinearGradient(0, 0, 400, 0);
+            grd.addColorStop(0, "#"+colorMin);
+            grd.addColorStop(1, "#"+colorMax);
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0,0,400,70);
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, 400, 40);
+            ctx.font = "15px Arial";
+            ctx.fillText(rangeMin,1,60);
+            ctx.textAlign = "center";
+            ctx.fillText((((rangeMin+rangeMax)/2)).toString(), 200, 60);
+            ctx.textAlign = "right";
+            ctx.fillText(rangeMax,399,60);
+            console.log("legend draw complete");
         }
     };
     return{

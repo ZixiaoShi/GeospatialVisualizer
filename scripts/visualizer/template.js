@@ -43,6 +43,12 @@ define(
                         .prop('type', 'button')
                         .attr('value', 'Customize')
                     )
+                    .append($('<input>')
+                        .addClass('visualizer-customize-keepRange')
+                        .prop('type','checkbox')
+                        .attr('id', 'constantRange')
+                        .attr('value', 'Keep Range')
+                        .prop('checked', false))
             ))
     };
 

@@ -15,6 +15,7 @@ function(
     var customizeEntity = function(entity){
         entity.addProperty("Value");
         entity.addProperty("values");
+		entity.addProperty("color");
         entity.properties.values = {};
         entity.label = new Cesium.LabelGraphics({
             text: entity.name

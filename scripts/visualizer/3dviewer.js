@@ -17,7 +17,7 @@ define([
 			geoCoder: false,
 			animation: true,
 			navigationInstructionsInitiallyVisible: true,
-			infoBox: true,
+			infoBox: false,
 			sceneModePicker: false,
 			scene3DOnly: false,
 			timeline: true,
