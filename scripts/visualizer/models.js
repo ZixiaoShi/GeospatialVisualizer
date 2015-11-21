@@ -22,12 +22,27 @@ function(
         });
     };
 
+	var Data = function(id, url){
+		this.id = id;
+		this.url = url;
+		this.timeInterval = undefined;
+		this.timeSamples = undefined;
+		this.entityId = [];
+		this.addEneity = function(entityid){
+			this.entityId.push(entityid);
+		};
+		this.value = undefined;
+		this.color = undefined;
+		this.name = undefined;
+		this.color = undefined;
+	};
+
 	var Dataset = function(name, settings){
 		this.name = name;
 		this.settings = settings;
 		this.data = {};
-		this.adddata = function(id, url){
-			this.data[id] = url;
+		this.adddata = function(id, data){
+			this.data[id] = data;
 		};
 		this.getdata = function(id){
 			return this.data[id];
@@ -129,6 +144,7 @@ function(
 
 	return{
         customizeEntity: customizeEntity,
+		Data: Data,
 		Dataset: Dataset,
 		DatasetCollection: DatasetCollection,
 		Variable: Variable,

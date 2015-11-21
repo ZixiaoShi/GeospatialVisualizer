@@ -35,6 +35,7 @@ define([
 
         this._defaultDatasetCollection = new models.DatasetCollection();
         this._defaultVariableCollection = new models.VariableCollection();
+        this.d3Data = [];
 
         this._startColorPicker = $("#StartColor").spectrum({
             color: "#" + this._startColor,
@@ -119,7 +120,8 @@ define([
                             for (var datasetName in meta[key]){
                                 var dataset = new models.Dataset(datasetName, datasets[datasetName].Settings);
                                 for (var dataid in datasets[datasetName].Data){
-                                    dataset.adddata(dataid, datasets[datasetName].Data[dataid]["url"]);
+                                    var data = new models.Data(dataid, datasets[datasetName].Data[dataid]["url"]);
+                                    dataset.adddata(dataid, data);
                                 }
                                 self._defaultDatasetCollection.addDataset(dataset, variable);
                             }
@@ -158,7 +160,7 @@ define([
             var dfd = $.Deferred();
             console.log(self._defaultEntityCollection);
           for (var id in dataset.data){
-              var url = dataset.data[id]
+              var url = dataset.data[id].url;
               readJsonTimeSeries(id, url, variable);
           }
             self._dataDrawn = true;
@@ -277,6 +279,8 @@ define([
                         else{
                             colorEntity(entity);
                         }
+                        //Update the data source for the 2d chart section
+
                         //console.log(entity);
                     }
                 }

@@ -50,6 +50,9 @@ define(
                         .attr('value', 'Keep Range')
                         .prop('checked', false))
             ))
+            .append($('<div>')
+                .addClass('visualizer-2D')
+                .attr('id', '2DSection'))
     };
 
     return{

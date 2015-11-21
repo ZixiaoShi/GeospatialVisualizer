@@ -26,3 +26,10 @@
 .visualizer-customize-range{
     width:20%;
 }
+.visualizer-2D{
+    width:40%;
+    height: 80%;
+    position: absolute;
+    opacity: 0.6;
+    background-color: #88AACC;
+}

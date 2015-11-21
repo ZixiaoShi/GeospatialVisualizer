@@ -7,7 +7,8 @@ require.config({
         jquery: 'lib/jquery-2.1.4.min',
         spectrum: 'lib/spectrum',
         //underscore: 'lib/underscore-min',
-        Cesium: 'lib/Cesium/Cesium'
+        Cesium: 'lib/Cesium/Cesium',
+        d3: 'lib/d3.min.js'
     },
     //This uses the build version of Cesium
     shim: {
