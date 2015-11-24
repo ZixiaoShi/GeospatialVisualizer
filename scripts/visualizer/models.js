@@ -13,10 +13,11 @@ function(
 ){
 
     var customizeEntity = function(entity){
-        entity.addProperty("Value");
-        entity.addProperty("values");
+        entity.addProperty("value");
+        //entity.addProperty("values");
 		entity.addProperty("color");
-        entity.properties.values = {};
+        //entity.properties.values = {};
+		entity.properties.value = 0.0;
         entity.label = new Cesium.LabelGraphics({
             text: entity.name
         });
@@ -28,13 +29,15 @@ function(
 		this.timeInterval = undefined;
 		this.timeSamples = undefined;
 		this.entityId = [];
+		this.getValue = function(time){
+			return this.timeInterval.getValue(time);
+		};
 		this.addEneity = function(entityid){
 			this.entityId.push(entityid);
 		};
 		this.value = undefined;
 		this.color = undefined;
 		this.name = undefined;
-		this.color = undefined;
 	};
 
 	var Dataset = function(name, settings){

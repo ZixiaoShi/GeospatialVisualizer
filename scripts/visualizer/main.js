@@ -132,6 +132,7 @@ define([
                     console.log("start drawing");
                     self._dataDrawn = true;
                 });
+                //drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
                 console.log(self._defaultDatasetCollection);
                 console.log(self._defaultVariableCollection);
             });
@@ -160,19 +161,19 @@ define([
             var dfd = $.Deferred();
             console.log(self._defaultEntityCollection);
           for (var id in dataset.data){
-              var url = dataset.data[id].url;
-              readJsonTimeSeries(id, url, variable);
+              readJsonTimeSeries(id, dataset.data[id], variable);
           }
             self._dataDrawn = true;
             return dfd.promise();
         };
 
-        function readJsonTimeSeries(id, url, variable){
-            $.getJSON(url, function(data){
+        function readJsonTimeSeries(id, data, variable){
+            $.getJSON(data.url, function(timeseries){
                 //console.log(self._defaultEntityCollection[id]);
                 $.each(self._defaultEntityCollection[id], function(key, entity){
-                    addTimeSeries(entity, variable, data);
+                    addTimeSeries(entity, variable, timeseries, data);
                     //console.log(entity);
+                    data.entityId.push(entity.id);
                 });
             });
         }
@@ -191,18 +192,24 @@ define([
             return dfd.promise();
         };
 
-        function addTimeSeries(entity, variable, timeseries){
+        function addTimeSeries(entity, variable, timeseries, data){
             //console.log(entity);
             var sampled = new Cesium.TimeIntervalCollectionProperty();
             var pos = 0;
             //console.log(timeseries.length);
             $.each(timeseries, function(key, values){
                 //console.log(key);
+                //get the value of the variable inside the sheet
+                var value = values[variable.name].replace(',', '')
+
+                if (value > self._defaultRangeMax && $('#constantRange').prop('checked')==false){
+                    self._defaultRangeMax = utilities.roundUp(value,1);
+                }
                sampled.intervals.addInterval(Cesium.TimeInterval.fromIso8601({
                    iso8601: key,
                    isStartIncluded: true,
                    isStopIncluded: false,
-                   data: values[variable.name].replace(',', '')
+                   data: value
                }));
             });
             /*
@@ -221,16 +228,10 @@ define([
                     parseFloat(timeseries[key][variable.name].replace(',', '')));
             }
             */
-            entity.properties['values'][variable.name] = sampled;
+            //entity.properties['values'][variable.name] = sampled;
+            data.timeInterval = sampled;
             //console.log(sampled[0]);
             //console.log(entity);
-        }
-
-        //Some worker functions for main.js
-        function updateColor(){
-            self._startColor = self._startColorPicker.spectrum('get').toHex();
-            self._endColor = self._endColorPicker.spectrum('get').toHex();
-            //self.drawEntity();
         }
 
         function drawLegend(colorMin, colorMax, rangeMin, rangeMax){
@@ -249,24 +250,76 @@ define([
             ctx.fillText((((rangeMin+rangeMax)/2)).toString(), 200, 60);
             ctx.textAlign = "right";
             ctx.fillText(rangeMax,399,60);
-            console.log("legend draw complete");
+            //console.log("legend draw complete");
         }
 
         var helper = new Cesium.EventHelper();
         helper.add(this._geospatialSection.viewer.clock.onTick, tickUpdate, this);
 
         function tickUpdate(){
-            if (this._dataDrawn == false){
+            if (self._dataDrawn == false){
                 return;
             }
+            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
             //console.log(this.viewer.clock.currentTime);
             //console.log(this._geospatialSection.viewer.entities.values);
             self._geospatialSection.viewer.entities.suspendEvents();
+            var variable = self._defaultVariableCollection.getCurrentVariable();
+            //console.log(variable);
+            //console.log(self._defaultDatasetCollection.getCurrentDataset(variable).data);
+
+            var dataset = self._defaultDatasetCollection.getCurrentDataset(variable);
+            $.each(dataset.data, function(id, data){
+                //console.log(id);
+                //console.log(data);
+                if (data.timeInterval == undefined){
+                    $.each(data.entityId, function (entityid) {
+                        //console.log(entityid);
+                    });
+                }
+                else{
+                    var newvalue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
+                    //console.log(newvalue);
+                    //console.log(self._defaultEntityCollection[id]);
+                    if (data.value != newvalue && self._defaultEntityCollection[id].length > 0) {
+                        data.value = newvalue;
+                        //console.log(newvalue);
+                        //console.log(self._defaultEntityCollection[id]);
+                        $.each(self._defaultEntityCollection[id], function (key, entity) {
+                            //console.log(entity);
+                            //var entity = self._defaultEntityCollection.getById(entityid);
+                            entity.properties.value = newvalue;
+                            colorEntity(entity);
+                        })
+                    }
+                }
+            });
+
+            /*
+            for (var i = 0; i < dataset.data.length; i++){
+                var id = dataset.data[i];
+                var data = dataset.data[id];
+                var newvalue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
+                console.log(newvalue);
+                if (data.value != newvalue){
+                    data.value = newvalue;
+                    //console.log(newvalue);
+                    $.foreach(data.entityId, function(entityid){
+                        var entity = self._defaultEntityCollection.getById(entityid);
+                        entity.properties.value = newvalue;
+                        colorEntity(entity);
+                    })
+                }
+            }
+            */
+
+            /*
             $.each(this._defaultEntityCollection, function(key, entities){
                 for (var i = 0; i< entities.length; i++){
                     var entity = entities[i];
                     if (!entity.properties.values["Electricity"]){continue;}
-                    var newvalue = entity.properties.values["Electricity"].getValue(self._geospatialSection.viewer.clock.currentTime);
+                    var newvalue = getData(entity, self._defaultVariableCollection.getCurrentVariable(),
+                        self._geospatialSection.viewer.clock.currentTime);
                     //console.log(newvalue);
                     if (entity.properties.value !== newvalue){
                         //console.log(self._defaultRangeMax);
@@ -286,7 +339,12 @@ define([
                 }
 
             });
-            self._geospatialSection.viewer.entities.suspendEvents();
+            */
+            self._geospatialSection.viewer.entities.resumeEvents();
+        }
+
+        function getData(entity, variable, time){
+            return entity.properties.values[variable.name].getValue(time)
         }
 
         function updateEntityColors(){
@@ -296,8 +354,8 @@ define([
                     colorEntity(entity);
                 })
             });
-            self._geospatialSection.viewer.entities.suspendEvents();
-            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+            self._geospatialSection.viewer.entities.resumeEvents();
+            //drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
         }
 
         function colorEntity(entity){
@@ -332,7 +390,7 @@ define([
             ctx.fillText((((rangeMin+rangeMax)/2)).toString(), 200, 60);
             ctx.textAlign = "right";
             ctx.fillText(rangeMax,399,60);
-            console.log("legend draw complete");
+            //console.log("legend draw complete");
         }
     };
     return{
