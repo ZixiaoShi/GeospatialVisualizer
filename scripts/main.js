@@ -8,7 +8,7 @@ require.config({
         spectrum: 'lib/spectrum',
         //underscore: 'lib/underscore-min',
         Cesium: 'lib/Cesium/Cesium',
-        d3: 'lib/d3.min.js'
+        d3: 'lib/d3.min'
     },
     //This uses the build version of Cesium
     shim: {

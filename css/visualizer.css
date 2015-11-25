@@ -33,3 +33,10 @@
     opacity: 0.6;
     background-color: #88AACC;
 }
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}

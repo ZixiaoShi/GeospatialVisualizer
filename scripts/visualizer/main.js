@@ -4,14 +4,16 @@ define([
     './template',
     './3dviewer',
     './models',
-    './utilities'
+    './utilities',
+    './heatmap'
 ],function(
     $,
     Cesium,
     template,
     GeospatialSection,
     models,
-    utilities
+    utilities,
+    heatmap
 )
 {
     "use strict";
@@ -121,6 +123,7 @@ define([
                                 var dataset = new models.Dataset(datasetName, datasets[datasetName].Settings);
                                 for (var dataid in datasets[datasetName].Data){
                                     var data = new models.Data(dataid, datasets[datasetName].Data[dataid]["url"]);
+                                    data.name = self._defaultEntityCollection[dataid][0].properties.Name;
                                     dataset.adddata(dataid, data);
                                 }
                                 self._defaultDatasetCollection.addDataset(dataset, variable);
@@ -129,6 +132,12 @@ define([
                     });
                 }).done(function(){
                 $.when(self.readCurrentTimeSeries()).done(function(){
+                    $(function(){self.heatmap = new heatmap.heatMap('#2DSection')});
+                    self.heatmap.drawHeatMap(
+                        self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data,
+                        self._defaultRangeMin,
+                        self._defaultRangeMax
+                    );
                     console.log("start drawing");
                     self._dataDrawn = true;
                 });
@@ -179,7 +188,7 @@ define([
         }
 
         this.readCurrentTimeSeries = function(){
-            var dfd = $.Deferred();
+            //var dfd = $.Deferred();
             //console.log(self._defaultVariableCollection);
             //console.log(self._defaultDatasetCollection);
             var variable = self._defaultVariableCollection.getCurrentVariable();
@@ -189,7 +198,8 @@ define([
             //console.log(self._defaultDatasetCollection.values);
             //console.log(self._defaultDatasetCollection.values[0]);
             //console.log(this._defaultEntityCollection);
-            return dfd.promise();
+            //console.log(heatmap);
+            //return dfd.promise();
         };
 
         function addTimeSeries(entity, variable, timeseries, data){
