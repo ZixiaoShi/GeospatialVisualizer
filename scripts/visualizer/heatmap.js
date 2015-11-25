@@ -12,17 +12,20 @@ define([
 
         this.upperLimit = 100.0;
         this.lowerLimit = 0.0;
+        this.barWidth = 40.0;
+        this.barMargin = 5.0;
+        var self = this;
+        this.start = d3.time.year.floor(new Date());
+        this.end = d3.time.year.ceil(new Date());
 
         var margin = {top: 20, right: 20, bottom: 30, left: 30},
             width = 500 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
-        var now = new Date(),
-            start = d3.time.year.floor(now),
-            end = d3.time.year.ceil(now);
-
         this.drawHeatMap = function(datas, lowerlimit, upperlimit){
-            console.log(Object.keys(datas));
+            var ids = Object.keys(datas);
+            height = (this.barWidth+2*this.barMargin)*ids.length - margin.top - margin.bottom;
+            //console.log(Object.keys(datas));
 
             this.upperLimit = upperlimit;
             this.lowerLimit = lowerlimit;
@@ -53,39 +56,53 @@ define([
                 .append('g')
                 .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            var ids = Object.keys(datas);
-
             svg.selectAll('rect')
                 .data(ids)
                 .enter()
-                .append('rect')
-                .attr('id', function(d){return d;})
+                .append('g')
+                .attr('id', function(d){return 'heatBar-' + d;})
                 .attr('x', function(){return x(0);})
                 .attr('y', function (d) {
                     return y(d);
                 })
                 .attr('width', width)
-                .attr('height', function(){return height/ids.length})
-                .style('fill', function () {
-                    return color(200000.0);
+                .attr('height', function(){return self.barWidth})
+                .style('stroke', '#FFFFFF ')
+                .style('stroke-opacity', 0)
+                .on('mouseover',function(){
+                    d3.select(this).style('stroke-opacity', 1);
+                }
+            )
+                .on('mouseout', function(){
+                    d3.select(this).style('stroke-opacity', 0);
                 });
 
             for (var i =0; i < ids.length; i ++) {
-                console.log(datas[ids[i]]);
+                //console.log(datas[ids[i]]);
+                var data = datas[ids[i]];
+                var intervals = data.timeInterval;
+                console.log(intervals);
+                //console.log(data);
+                svg.select('#heatBar-' + ids[i])
+                    .append('rect')
+                    .attr('x', x(0))
+                    .attr('y', y(ids[i]))
+                    .attr('width', 10.0)
+                    .attr('height', self.barWidth)
+                    .style('fill', '#000000');
+                /*
                  svg.selectAll('rect')
-                    .data(datas[ids[i]])
+                    .data(data)
                     .enter()
                      .append('rect')
-                    .attr('id', function(){ids[i]})
-                    .attr('x', function(){x(0)})
-                    .attr('y', function () {
-                        return y(ids[i]);
+                    .attr('x', function(){return x(0);})
+                    .attr('y', function (d) {
+                        return y(d.id);
                     })
-                    .attr('width', width)
-                    .attr('height', y(ids[1]-y(ids[0])))
-                    .style('fill', function () {
-                        return color(200000.0);
-                    });
+                    .attr('width', function(){return 40.0;})
+                    .attr('height', self.barWidth)
+                    .style('fill', '#000000');
+                    */
             }
 
             svg.append("g")

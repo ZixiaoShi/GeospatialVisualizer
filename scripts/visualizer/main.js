@@ -132,12 +132,6 @@ define([
                     });
                 }).done(function(){
                 $.when(self.readCurrentTimeSeries()).done(function(){
-                    $(function(){self.heatmap = new heatmap.heatMap('#2DSection')});
-                    self.heatmap.drawHeatMap(
-                        self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data,
-                        self._defaultRangeMin,
-                        self._defaultRangeMax
-                    );
                     console.log("start drawing");
                     self._dataDrawn = true;
                 });
@@ -168,12 +162,16 @@ define([
 
         this.readTimeSeriesFromURL = function(dataset, variable){
             var dfd = $.Deferred();
-            console.log(self._defaultEntityCollection);
+            //console.log(self._defaultEntityCollection);
+            var readDeferralArray = [];
           for (var id in dataset.data){
-              readJsonTimeSeries(id, dataset.data[id], variable);
+              var readTask = readJsonTimeSeries(id, dataset.data[id], variable);
+              readDeferralArray.push(readTask);
           }
-            self._dataDrawn = true;
-            return dfd.promise();
+            $.when.apply(null, readDeferralArray).done(function(){
+                self._dataDrawn = true;
+                return dfd.promise;
+            });
         };
 
         function readJsonTimeSeries(id, data, variable){
@@ -194,7 +192,14 @@ define([
             var variable = self._defaultVariableCollection.getCurrentVariable();
             //console.log(variable);
             var dataset = this._defaultDatasetCollection.getCurrentDataset(variable);
-            self.readTimeSeriesFromURL(dataset, variable);
+            $.when(self.readTimeSeriesFromURL(dataset, variable)).done(function(){
+                self.heatmap = new heatmap.heatMap('#2DSection');
+                self.heatmap.drawHeatMap(
+                    self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data,
+                    self._defaultRangeMin,
+                    self._defaultRangeMax
+                );
+            });
             //console.log(self._defaultDatasetCollection.values);
             //console.log(self._defaultDatasetCollection.values[0]);
             //console.log(this._defaultEntityCollection);
