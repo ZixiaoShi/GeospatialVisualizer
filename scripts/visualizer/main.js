@@ -31,6 +31,8 @@ define([
         this.customRangeMin = 0.0;
         this.customRangeMax = 0.0;
         this._defaultEntityCollection = {};
+        this._defaultTimeMin = undefined;
+        this._defaultTimeMax = undefined;
 
         this._startColor = '0AF229';
         this._endColor = 'F20505';
@@ -169,13 +171,17 @@ define([
               readDeferralArray.push(readTask);
           }
             $.when.apply(null, readDeferralArray).done(function(){
+                //alert("all done");
+                console.log("all done 1");
                 self._dataDrawn = true;
-                return dfd.promise;
+                dfd.resolve();
+
             });
+            return dfd.promise();
         };
 
         function readJsonTimeSeries(id, data, variable){
-            $.getJSON(data.url, function(timeseries){
+            return $.getJSON(data.url, function(timeseries){
                 //console.log(self._defaultEntityCollection[id]);
                 $.each(self._defaultEntityCollection[id], function(key, entity){
                     addTimeSeries(entity, variable, timeseries, data);
@@ -192,13 +198,19 @@ define([
             var variable = self._defaultVariableCollection.getCurrentVariable();
             //console.log(variable);
             var dataset = this._defaultDatasetCollection.getCurrentDataset(variable);
-            $.when(self.readTimeSeriesFromURL(dataset, variable)).done(function(){
+            var readProcess = self.readTimeSeriesFromURL(dataset, variable);
+            readProcess.done(function(){
+                console.log("all done 2");
+
                 self.heatmap = new heatmap.heatMap('#2DSection');
+                self.heatmap.start = self._defaultTimeMin;
+                self.heatmap.end = self._defaultTimeMax;
                 self.heatmap.drawHeatMap(
                     self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data,
                     self._defaultRangeMin,
                     self._defaultRangeMax
                 );
+
             });
             //console.log(self._defaultDatasetCollection.values);
             //console.log(self._defaultDatasetCollection.values[0]);
@@ -215,7 +227,7 @@ define([
             $.each(timeseries, function(key, values){
                 //console.log(key);
                 //get the value of the variable inside the sheet
-                var value = values[variable.name].replace(',', '')
+                var value = values[variable.name].replace(',', '');
 
                 if (value > self._defaultRangeMax && $('#constantRange').prop('checked')==false){
                     self._defaultRangeMax = utilities.roundUp(value,1);
@@ -244,7 +256,18 @@ define([
             }
             */
             //entity.properties['values'][variable.name] = sampled;
+            //console.log(sampled.intervals.get(0));
             data.timeInterval = sampled;
+            var startDate = Cesium.JulianDate.toDate(sampled.intervals.get(0).start);
+            var stopDate = Cesium.JulianDate.toDate(sampled.intervals.get(sampled.intervals.length-1).stop);
+            if (self._defaultTimeMin == undefined || self._defaultTimeMin > startDate){
+                self._defaultTimeMin = startDate;
+                console.log(self._defaultTimeMin);
+            }
+            if (self._defaultTimeMax == undefined || self._defaultTimeMax < stopDate){
+                self._defaultTimeMax = stopDate;
+                console.log(self._defaultTimeMax);
+            }
             //console.log(sampled[0]);
             //console.log(entity);
         }

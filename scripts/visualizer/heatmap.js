@@ -2,9 +2,11 @@
  * Created by freeze on 2015-11-17.
  */
 define([
+    'Cesium',
     'd3',
     './models'
 ],function(
+    Cesium,
     d3,
     models
 ){
@@ -19,10 +21,20 @@ define([
         this.end = d3.time.year.ceil(new Date());
 
         var margin = {top: 20, right: 20, bottom: 30, left: 30},
-            width = 500 - margin.left - margin.right,
+            width = 700.0 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
 
         this.drawHeatMap = function(datas, lowerlimit, upperlimit){
+            var points = 100.0;
+            var dates = generateDatesArray(this.start,this.end, points);
+            var pointWidth = width/points;
+            var names = [];
+            for (var key in datas){
+                names.push(datas[key].name);
+            }
+
+            //console.log(names);
+
             var ids = Object.keys(datas);
             height = (this.barWidth+2*this.barMargin)*ids.length - margin.top - margin.bottom;
             //console.log(Object.keys(datas));
@@ -30,13 +42,13 @@ define([
             this.upperLimit = upperlimit;
             this.lowerLimit = lowerlimit;
 
-            var x = d3.scale.linear()
+            var x = d3.time.scale()
                 .range([0, width])
-                .domain([0, 12]);
+                .domain([this.start, this.end]);
 
             var y = d3.scale.ordinal()
                 .rangeRoundBands([height, 0],.1,.2)
-                .domain(Object.keys(datas));
+                .domain(names);
 
             var color = d3.scale.linear()
                 .domain([this.lowerLimit, this.upperLimit])
@@ -44,11 +56,12 @@ define([
 
             var xAxis = d3.svg.axis()
                 .scale(x)
-                .orient('bottom');
+                .ticks(5)
+                .orient('top');
 
             var yAxis = d3.svg.axis()
                 .scale(y)
-                .orient('left');
+                .orient('right');
 
             var svg = d3.select($(container)[0]).append('svg')
                 .attr('width', width + margin.left + margin .right)
@@ -56,58 +69,43 @@ define([
                 .append('g')
                 .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-            svg.selectAll('rect')
-                .data(ids)
-                .enter()
-                .append('g')
-                .attr('id', function(d){return 'heatBar-' + d;})
-                .attr('x', function(){return x(0);})
-                .attr('y', function (d) {
-                    return y(d);
-                })
-                .attr('width', width)
-                .attr('height', function(){return self.barWidth})
-                .style('stroke', '#FFFFFF ')
-                .style('stroke-opacity', 0)
-                .on('mouseover',function(){
-                    d3.select(this).style('stroke-opacity', 1);
-                }
-            )
-                .on('mouseout', function(){
-                    d3.select(this).style('stroke-opacity', 0);
-                });
-
             for (var i =0; i < ids.length; i ++) {
-                //console.log(datas[ids[i]]);
-                var data = datas[ids[i]];
-                var intervals = data.timeInterval;
-                console.log(intervals);
-                //console.log(data);
-                svg.select('#heatBar-' + ids[i])
-                    .append('rect')
-                    .attr('x', x(0))
-                    .attr('y', y(ids[i]))
-                    .attr('width', 10.0)
-                    .attr('height', self.barWidth)
-                    .style('fill', '#000000');
-                /*
-                 svg.selectAll('rect')
-                    .data(data)
-                    .enter()
-                     .append('rect')
-                    .attr('x', function(){return x(0);})
-                    .attr('y', function (d) {
-                        return y(d.id);
+                var id = ids[i];
+                var data = datas[id];
+                var barGroup = svg.append('g')
+                    .attr('id', function(){return 'heatBar-' + id;})
+                    .attr('x', function(){return x(self.start);})
+                    .attr('y', function () {
+                        return y(data.name);
                     })
-                    .attr('width', function(){return 40.0;})
+                    .attr('width', width)
+                    .attr('height', function(){return self.barWidth})
+                    .style('stroke', '#FFFFFF ')
+                    .style('stroke-opacity', 0)
+                    .on('mouseover',function(){
+                        d3.select(this).style('stroke-opacity', 1);
+                    })
+                    .on('mouseout', function(){
+                        d3.select(this).style('stroke-opacity', 0);
+                    });
+
+                var intervals = data.timeInterval;
+                //console.log(intervals);
+                //console.log(data);
+                barGroup.selectAll('rect')
+                    .data(dates)
+                    .enter()
+                    .append('rect')
+                    .attr('x', function(d){ return x(d);})
+                    .attr('y', function(){return y(data.name);})
+                    .attr('width', pointWidth)
                     .attr('height', self.barWidth)
-                    .style('fill', '#000000');
-                    */
+                    .style('fill', function(d){return color(intervals.getValue(new Cesium.JulianDate.fromDate(d)));});
             }
 
             svg.append("g")
                 .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
+                .attr("transform", "translate(0,0)")
                 .call(xAxis);
 
             svg.append("g")
@@ -142,6 +140,18 @@ define([
 
 
     };
+
+    function generateDatesArray(startDate, stopDate, n){
+        var range = Math.abs(stopDate.getTime() - startDate.getTime());
+        var step = range/n;
+        var startDateValue = startDate.getTime();
+        var dateArray = [startDate];
+        for (var i=0; i<n-1; i++){
+            dateArray.push(new Date(startDateValue+step*i))
+        }
+        //console.log(dateArray);
+        return dateArray
+    }
 
     return {
         heatMap: heatMap
