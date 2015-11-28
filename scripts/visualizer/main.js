@@ -104,7 +104,7 @@ define([
                     }
                 }
                 //console.log(entities);
-                //console.log(self._defaultEntityCollection);
+                console.log(self._defaultEntityCollection);
                 entities.resumeEvents();
                 //return dfd;;
             });
@@ -202,7 +202,7 @@ define([
             readProcess.done(function(){
                 console.log("all done 2");
 
-                self.heatmap = new heatmap.heatMap('#2DSection');
+                self.heatmap = new heatmap.heatMap('#2DSection', self);
                 self.heatmap.start = self._defaultTimeMin;
                 self.heatmap.end = self._defaultTimeMax;
                 self.heatmap.drawHeatMap(
@@ -402,6 +402,23 @@ define([
             entity.polygon.material = Cesium.Color.fromCssColorString("#"+ entity.properties.color);
             //entity.polygon.material = Cesium.Color.RED;
         }
+
+        //uses the id of the data to outline the entities
+        this.outlineEntities = function(id){
+            var entities = self._defaultEntityCollection[id];
+            //console.log(entities);
+            $.each(entities, function(key){
+                entities[key].polygon.outline=true;
+            });
+        };
+
+        this.deoutlineEntities = function(id){
+            var entities = self._defaultEntityCollection[id];
+            //console.log(entities);
+            $.each(entities, function(key){
+                entities[key].polygon.outline=false;
+            });
+        };
 
         //Some worker functions for main.js
         //Some worker functions for main.js

@@ -10,7 +10,8 @@ define([
     d3,
     models
 ){
-    var heatMap = function(container){
+    var heatMap = function(container, main){
+        var main = main;
 
         this.upperLimit = 100.0;
         this.lowerLimit = 0.0;
@@ -25,7 +26,7 @@ define([
             height = 500 - margin.top - margin.bottom;
 
         this.drawHeatMap = function(datas, lowerlimit, upperlimit){
-            var points = 100.0;
+            var points = 20.0;
             var dates = generateDatesArray(this.start,this.end, points);
             var pointWidth = width/points;
             var names = [];
@@ -69,10 +70,31 @@ define([
                 .append('g')
                 .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+            var chart = svg.append('g')
+                .attr('id', 'ChartSection')
+                .attr('width', width)
+                .attr('height', height);
+
+                var barGroup = chart.selectAll('g')
+                .data(ids)
+                .enter()
+                .append('g')
+                .attr('id', function(d){return 'heatBar-' + d;})
+                .attr('x', function(){return x(self.start);})
+                .attr('y', function (d) {
+                    return y(datas[d].name);
+                })
+                .attr('width', width)
+                .attr('height', function(){return self.barWidth})
+                .style('stroke', '#FFFFFF ')
+                .style('stroke-opacity', 0);
+
             for (var i =0; i < ids.length; i ++) {
                 var id = ids[i];
                 var data = datas[id];
-                var barGroup = svg.append('g')
+                /*
+                var barGroup = svg
+                    .append('g')
                     .attr('id', function(){return 'heatBar-' + id;})
                     .attr('x', function(){return x(self.start);})
                     .attr('y', function () {
@@ -84,15 +106,17 @@ define([
                     .style('stroke-opacity', 0)
                     .on('mouseover',function(){
                         d3.select(this).style('stroke-opacity', 1);
+                        main.outlineEntities(id);
                     })
                     .on('mouseout', function(){
                         d3.select(this).style('stroke-opacity', 0);
+                        main.deoutlineEntities(id);
                     });
-
+                    */
                 var intervals = data.timeInterval;
                 //console.log(intervals);
                 //console.log(data);
-                barGroup.selectAll('rect')
+                barGroup.selectAll('#heatBar-' + id)
                     .data(dates)
                     .enter()
                     .append('rect')
@@ -100,7 +124,15 @@ define([
                     .attr('y', function(){return y(data.name);})
                     .attr('width', pointWidth)
                     .attr('height', self.barWidth)
-                    .style('fill', function(d){return color(intervals.getValue(new Cesium.JulianDate.fromDate(d)));});
+                    .style('fill', function(d){return color(intervals.getValue(new Cesium.JulianDate.fromDate(d)));})
+                    .on('mouseover',function(){
+                        d3.select(this).style('stroke-opacity', 1);
+                        main.outlineEntities(id);
+                    })
+                    .on('mouseout', function(){
+                        d3.select(this).style('stroke-opacity', 0);
+                        main.deoutlineEntities(id);
+                    });
             }
 
             svg.append("g")
