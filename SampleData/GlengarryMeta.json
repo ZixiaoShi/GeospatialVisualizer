@@ -1,0 +1,48 @@
+{
+  "Variables": {
+    "Electricity":"kWh",
+    "Electricity Cost":"$",
+    "Steam":"kWh",
+    "Steam Value":"$",
+    "Natural Gas":"kWh",
+    "Natural Gas Cost":"$",
+    "Water":"m3",
+    "Water Cost":"$",
+    "Total Cost":"$",
+    "Total GHG Emission":"kg CO2"
+  },
+  "Custom_Properties": [
+      "Abbreviation",
+      "Floor Area",
+      "Occupancy",
+      "Year Built"
+    ],
+  "Normalization":{
+	  "Occupancy": "Occupancy",
+      "Floor Area": "Floor Area"
+	},
+  "Electricity":{
+    "Monthly":{
+      "Settings":{
+        "RealTime" : false
+      },
+      "Data":{
+        "1":{
+          "url": "SampleData/continuous_data/glengarry_1_electricity_month.json"
+        },
+        "2":{
+          "url": "SampleData/continuous_data/glengarry_2_electricity_month.json"
+        },
+        "3":{
+          "url": "SampleData/continuous_data/glengarry_3_electricity_month.json"
+        },
+        "4":{
+          "url": "SampleData/continuous_data/glengarry_4_electricity_month.json"
+        },
+        "5":{
+          "url": "SampleData/continuous_data/glengarry_5_electricity_month.json"
+        }
+      }
+    }
+  }
+}

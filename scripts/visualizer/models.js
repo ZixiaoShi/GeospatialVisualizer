@@ -18,6 +18,7 @@ function(
 		entity.addProperty("color");
         //entity.properties.values = {};
 		entity.properties.value = 0.0;
+		entity.polygon.height = parseFloat(entity.properties.Elevation);
         entity.label = new Cesium.LabelGraphics({
             text: entity.name
         });

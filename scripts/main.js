@@ -32,6 +32,9 @@ require(['visualizer', 'jquery','spectrum'],function(visualizer, $,spectrum){
     //vis.LoadMeta("SampleData/BuildingDataMeta.json");
     vis.LoadEntities("SampleData/CarletonCampus.geojson",'geojson',true);
     vis.LoadMeta("SampleData/CarletonMeta.json");
+
+   // vis.LoadEntities("SampleData/Glengarry.geojson",'geojson',true);
+    //vis.LoadMeta("SampleData/GlengarryMeta.json");
     //vis.readCurrentTimeSeries();
     //vis.initiate("SampleData/CarletonCampus.geojson",'geojson',true, "SampleData/CarletonMeta.json");
     //vis.readCurrentTimeSeries();

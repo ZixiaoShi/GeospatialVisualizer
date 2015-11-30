@@ -2,10 +2,12 @@
  * Created by freeze on 2015-11-17.
  */
 define([
+    'jquery',
     'Cesium',
     'd3',
     './models'
 ],function(
+    $,
     Cesium,
     d3,
     models
@@ -64,6 +66,12 @@ define([
                 .scale(y)
                 .orient('right');
 
+            var formatTime = d3.time.format("%e %B");
+
+            var tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
             var svg = d3.select($(container)[0]).append('svg')
                 .attr('width', width + margin.left + margin .right)
                 .attr('height', height + margin.top + margin.bottom)
@@ -76,18 +84,54 @@ define([
                 .attr('height', height);
 
                 var barGroup = chart.selectAll('g')
-                .data(ids)
+                .data(d3.entries(datas))
                 .enter()
                 .append('g')
-                .attr('id', function(d){return 'heatBar-' + d;})
+                .attr('id', function(d){return 'heatBar-' + d.key;})
                 .attr('x', function(){return x(self.start);})
                 .attr('y', function (d) {
-                    return y(datas[d].name);
+                    return y(d.value.name);
                 })
                 .attr('width', width)
                 .attr('height', function(){return self.barWidth})
                 .style('stroke', '#FFFFFF ')
                 .style('stroke-opacity', 0);
+
+            barGroup
+                .each(function(data,i){
+                    //console.log(data);
+                    barGroup.selectAll('#heatBar-' + data.key)
+                        .data(dates)
+                        .enter()
+                        .append('rect')
+                        .attr('x', function(d){ return x(d);})
+                        .attr('y', function(){return y(data.value.name);})
+                        .attr('width', pointWidth)
+                        .attr('height', self.barWidth)
+                        .style('fill', function(d){return color(data.value.timeInterval.getValue(new Cesium.JulianDate.fromDate(d)));})
+                        .on('mouseover',function(d){
+                            d3.select(this).style('stroke-opacity', 1);
+                            main.outlineEntities(data.key);
+                            tooltip.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                            tooltip.html(formatTime(d) + "<br/>")
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY) + "px");
+                        })
+                        .on('mouseout', function(){
+                            d3.select(this).style('stroke-opacity', 0);
+                            main.deoutlineEntities(data.key);
+                            tooltip.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        })
+                        .on('click', function(){
+                            main.focusEntities(data.key);
+                        });
+
+
+                });
 
             for (var i =0; i < ids.length; i ++) {
                 var id = ids[i];
@@ -113,6 +157,7 @@ define([
                         main.deoutlineEntities(id);
                     });
                     */
+                /*
                 var intervals = data.timeInterval;
                 //console.log(intervals);
                 //console.log(data);
@@ -133,6 +178,7 @@ define([
                         d3.select(this).style('stroke-opacity', 0);
                         main.deoutlineEntities(id);
                     });
+                    */
             }
 
             svg.append("g")

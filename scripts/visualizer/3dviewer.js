@@ -17,7 +17,7 @@ define([
 			geoCoder: false,
 			animation: true,
 			navigationInstructionsInitiallyVisible: true,
-			infoBox: false,
+			infoBox: true,
 			sceneModePicker: false,
 			scene3DOnly: false,
 			timeline: true,
@@ -38,7 +38,9 @@ define([
 	};
 
     var extrudeEntity = function(entity){
-        entity.polygon.material = Cesium.Color.GAINSBORO;
+        entity.polygon.material = Cesium.Material.fromType('Color', {
+			color: Cesium.Color.fromAlpha(Cesium.Color.GAINSBORO, 0.8)
+	});
         entity.polygon.outline = false;
         entity.polygon.extrudedHeight = entity.properties.Height;
     };

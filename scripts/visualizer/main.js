@@ -33,6 +33,7 @@ define([
         this._defaultEntityCollection = {};
         this._defaultTimeMin = undefined;
         this._defaultTimeMax = undefined;
+        this._defaultAlpha = 0.8;
 
         this._startColor = '0AF229';
         this._endColor = 'F20505';
@@ -399,8 +400,12 @@ define([
         function colorEntity(entity){
             var weight = (entity.properties.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
             entity.properties.color =  utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
-            entity.polygon.material = Cesium.Color.fromCssColorString("#"+ entity.properties.color);
-            //entity.polygon.material = Cesium.Color.RED;
+            entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.fromCssColorString("#"+ entity.properties.color), 0.8);
+            /*
+            entity.polygon.material = Cesium.Material.fromType('Color', {
+                color: Cesium.Color.RED.withAlpha(0.6)
+            });
+            */
         }
 
         //uses the id of the data to outline the entities
@@ -418,6 +423,11 @@ define([
             $.each(entities, function(key){
                 entities[key].polygon.outline=false;
             });
+        };
+
+        this.focusEntities = function(id){
+            var entities= self._defaultEntityCollection[id];
+            this._geospatialSection.viewer.flyTo(entities);
         };
 
         //Some worker functions for main.js
