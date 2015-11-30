@@ -27,8 +27,16 @@
     width:20%;
 }
 .visualizer-2D{
-    width:40%;
+    width: 40%;
     height: 80%;
+    position: absolute;
+    opacity: 0.6;
+    background-color: #88AACC;
+}
+.visualizer-control{
+    width: 30%;
+    height: 20%;
+    right: 0;
     position: absolute;
     opacity: 0.6;
     background-color: #88AACC;

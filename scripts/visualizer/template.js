@@ -51,8 +51,18 @@ define(
                         .prop('checked', false))
             ))
             .append($('<div>')
+                .addClass('visualizer-control'))
+            .append($('<div>')
                 .addClass('visualizer-2D')
-                .attr('id', '2DSection'))
+                .attr('id', '2DSection')
+                .append($('<input>')
+                    .attr('type', 'checkbox')
+                    .attr('id', 'visualizer-brusher')
+                    .attr('value', 'Brush Selected')
+                )
+                .append($('<label>')
+                    .text('Brush Selected'))
+            )
     };
 
     return{

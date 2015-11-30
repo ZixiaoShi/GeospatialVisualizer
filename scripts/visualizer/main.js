@@ -203,6 +203,7 @@ define([
             readProcess.done(function(){
                 console.log("all done 2");
 
+
                 self.heatmap = new heatmap.heatMap('#2DSection', self);
                 self.heatmap.start = self._defaultTimeMin;
                 self.heatmap.end = self._defaultTimeMax;
@@ -327,8 +328,16 @@ define([
                         $.each(self._defaultEntityCollection[id], function (key, entity) {
                             //console.log(entity);
                             //var entity = self._defaultEntityCollection.getById(entityid);
-                            entity.properties.value = newvalue;
-                            colorEntity(entity);
+                            if (entity != 'undefined'){
+                                try{
+                                    entity.properties.value = newvalue;
+                                    colorEntity(entity);
+                                }
+                                catch(err){
+                                    console.log(err.toString());
+                                    console.log("error logging" + entity.properties.name);
+                                }
+                            }
                         })
                     }
                 }
@@ -386,7 +395,7 @@ define([
             return entity.properties.values[variable.name].getValue(time)
         }
 
-        function updateEntityColors(){
+        this.updateEntityColors = function(){
             self._geospatialSection.viewer.entities.suspendEvents();
             $.each(self._defaultEntityCollection, function(key, entities){
                 $.each(entities, function(id, entity){
@@ -394,13 +403,14 @@ define([
                 })
             });
             self._geospatialSection.viewer.entities.resumeEvents();
-            //drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
-        }
+        };
 
         function colorEntity(entity){
-            var weight = (entity.properties.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
-            entity.properties.color =  utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
-            entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.fromCssColorString("#"+ entity.properties.color), 0.8);
+            if (entity.properties.value != 0){
+                var weight = (entity.properties.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
+                entity.properties.color =  utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
+            }
+            changeAlpha(entity, 0.8);
             /*
             entity.polygon.material = Cesium.Material.fromType('Color', {
                 color: Cesium.Color.RED.withAlpha(0.6)
@@ -412,9 +422,13 @@ define([
         this.outlineEntities = function(id){
             var entities = self._defaultEntityCollection[id];
             //console.log(entities);
+            //self._geospatialSection.viewer.entities.suspendEvents();
             $.each(entities, function(key){
                 entities[key].polygon.outline=true;
+                entities[key].polygon.outlineColor = Cesium.Color.BLACK;
+                changeAlpha(entities[key], 1.0)
             });
+            //self._geospatialSection.viewer.entities.resumeEvents();
         };
 
         this.deoutlineEntities = function(id){
@@ -422,13 +436,46 @@ define([
             //console.log(entities);
             $.each(entities, function(key){
                 entities[key].polygon.outline=false;
+                //entities[key].polygon.material = Cesium.Color.fromAlpha(Cesium.Color.fromCssColorString("#"+ entities[key].properties.color), 0.8);
+                changeAlpha(entities[key], 0.8);
             });
         };
 
         this.focusEntities = function(id){
-            var entities= self._defaultEntityCollection[id];
-            this._geospatialSection.viewer.flyTo(entities);
+            var entities = self._defaultEntityCollection[id];
+            self._geospatialSection.viewer.flyTo(entities);
         };
+
+        this.brushEntities = function(ids){
+            //console.log(ids);
+            self._geospatialSection.viewer.entities.suspendEvents();
+            for (var id in self._defaultEntityCollection){
+                var entities = self._defaultEntityCollection[id];
+                if ($.inArray(id, ids) != -1){
+                    for (var key in entities){
+                        var entity = entities[key];
+                        changeAlpha(entity, 1.0);
+                    }
+                }
+                else{
+                    for (var key in entities){
+                        var entity = entities[key];
+                        changeAlpha(entity, 0.0);
+                    };
+                }
+            }
+            self._geospatialSection.viewer.entities.resumeEvents();
+        };
+
+        function changeAlpha(entity, alpha){
+            //console.log(entity);
+            if (typeof entity.properties.color !== 'undefined'){
+                entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.fromCssColorString("#"+ entity.properties.color), alpha);
+            }
+            else{
+                entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.GAINSBORO, alpha);
+            }
+        }
 
         //Some worker functions for main.js
         //Some worker functions for main.js
@@ -436,7 +483,7 @@ define([
             console.log("color changed!");
             self._startColor = self._startColorPicker.spectrum('get').toHex();
             self._endColor = self._endColorPicker.spectrum('get').toHex();
-            updateEntityColors();
+            this.updateEntityColors();
         }
 
         function drawLegend(colorMin, colorMax, rangeMin, rangeMax){

@@ -83,19 +83,34 @@ define([
                 .attr('width', width)
                 .attr('height', height);
 
-                var barGroup = chart.selectAll('g')
+            var barGroup = chart.selectAll('g')
                 .data(d3.entries(datas))
                 .enter()
                 .append('g')
-                .attr('id', function(d){return 'heatBar-' + d.key;})
-                .attr('x', function(){return x(self.start);})
-                .attr('y', function (d) {
-                    return y(d.value.name);
-                })
-                .attr('width', width)
-                .attr('height', function(){return self.barWidth})
-                .style('stroke', '#FFFFFF ')
-                .style('stroke-opacity', 0);
+                    .attr('id', function(d){return 'heatBar-' + d.key;})
+                    .attr('x', function(){return x(self.start);})
+                    .attr('y', function (d) {
+                        return y(d.value.name);
+                    })
+                    .attr('width', width)
+                    .attr('height', function(){return self.barWidth})
+                    .style('stroke', '#FFFFFF ')
+                    .style('stroke-opacity', 0);
+
+            var checkboxes = chart.selectAll('foreignObject')
+                .data(d3.entries(datas))
+                .enter()
+                .append('foreignObject')
+                    .attr('class', 'brush-checkbox')
+                    .attr('x', function(){return x(self.start)-margin.left;})
+                    .attr('y', function (d) {
+                        return y(d.value.name);
+                    })
+                .append("xhtml:body")
+                .html(function(d){
+                    return "<label class='inline'><input type='checkbox' class='brush' id='brush-" + d.key +
+                        "' value='"+ d.key + "'><span class='lbl'> </span>               </label>"
+                });
 
             barGroup
                 .each(function(data,i){
@@ -133,54 +148,6 @@ define([
 
                 });
 
-            for (var i =0; i < ids.length; i ++) {
-                var id = ids[i];
-                var data = datas[id];
-                /*
-                var barGroup = svg
-                    .append('g')
-                    .attr('id', function(){return 'heatBar-' + id;})
-                    .attr('x', function(){return x(self.start);})
-                    .attr('y', function () {
-                        return y(data.name);
-                    })
-                    .attr('width', width)
-                    .attr('height', function(){return self.barWidth})
-                    .style('stroke', '#FFFFFF ')
-                    .style('stroke-opacity', 0)
-                    .on('mouseover',function(){
-                        d3.select(this).style('stroke-opacity', 1);
-                        main.outlineEntities(id);
-                    })
-                    .on('mouseout', function(){
-                        d3.select(this).style('stroke-opacity', 0);
-                        main.deoutlineEntities(id);
-                    });
-                    */
-                /*
-                var intervals = data.timeInterval;
-                //console.log(intervals);
-                //console.log(data);
-                barGroup.selectAll('#heatBar-' + id)
-                    .data(dates)
-                    .enter()
-                    .append('rect')
-                    .attr('x', function(d){ return x(d);})
-                    .attr('y', function(){return y(data.name);})
-                    .attr('width', pointWidth)
-                    .attr('height', self.barWidth)
-                    .style('fill', function(d){return color(intervals.getValue(new Cesium.JulianDate.fromDate(d)));})
-                    .on('mouseover',function(){
-                        d3.select(this).style('stroke-opacity', 1);
-                        main.outlineEntities(id);
-                    })
-                    .on('mouseout', function(){
-                        d3.select(this).style('stroke-opacity', 0);
-                        main.deoutlineEntities(id);
-                    });
-                    */
-            }
-
             svg.append("g")
                 .attr("class", "x axis")
                 .attr("transform", "translate(0,0)")
@@ -191,6 +158,21 @@ define([
                 .call(yAxis);
 
         };
+
+        $('#visualizer-brusher').on('click', function(){
+            var hightlighted = [];
+            $('.brush').each(function(){
+                if (this.checked == true){
+                    hightlighted.push(this.value);
+                }
+            });
+            if (this.checked){
+                main.brushEntities(hightlighted);
+            }
+            else{
+                main.updateEntityColors()
+            }
+        });
         /*
 
         //console.log(data);
