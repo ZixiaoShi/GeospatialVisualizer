@@ -22,6 +22,7 @@ define([
         var self = this;
         this.start = d3.time.year.floor(new Date());
         this.end = d3.time.year.ceil(new Date());
+        this.dataType = "timeInterval";
 
         var margin = {top: 20, right: 20, bottom: 30, left: 30},
             width = 700.0 - margin.left - margin.right,
@@ -35,6 +36,7 @@ define([
             for (var key in datas){
                 names.push(datas[key].name);
             }
+            //console.log(datas["5"].timeInterval._intervals._intervals);
 
             //console.log(names);
 
@@ -95,9 +97,32 @@ define([
                     .attr('width', width)
                     .attr('height', function(){return self.barWidth})
                     .style('stroke', '#FFFFFF ')
-                    .style('stroke-opacity', 0);
+                    .style('stroke-opacity', 0)
+                .on('mouseover', function(d){
+                    main.outlineEntities(d.key)
+                })
+                .on('mouseout', function(d){
+                    main.deoutlineEntities(d.key)
+                })
+                .selectAll('rect')
+                .data(function(d){
+                    //console.log(d.value[self.dataType]._intervals._intervals[0].start);
+                    return d3.entries(d.value[self.dataType]._intervals._intervals);
+                })
+                .enter()
+                .append('rect')
+                .attr('y', function(){return d3.select(this.parentNode).y;})
+                .attr('x', function(d){
+                    //console.log(d);
+                    return x(Cesium.JulianDate.toDate(d.value.start));
+                })
+                .attr('width', function(d){
+                    return x(Cesium.JulianDate.toDate(d.value.stop)) - x(Cesium.JulianDate.toDate(d.value.start));
+                })
+                .attr('height', self.barWidth)
+                .style('fill', function(d){return self.color(parseFloat(d.value.data));});
 
-            var checkboxes = chart.selectAll('foreignObject')
+            var checkboxes = function(){chart.selectAll('foreignObject')
                 .data(d3.entries(datas))
                 .enter()
                 .append('foreignObject')
@@ -108,9 +133,10 @@ define([
                     })
                 .append("xhtml:body")
                 .html(function(d){
-                    return "<label class='inline'><input type='checkbox' class='brush' id='brush-" + d.key +
-                        "' value='"+ d.key + "'><span class='lbl'> </span>               </label>"
-                });
+                    return "<form><input type='checkbox' class='brush' id='brush-" + d.key +
+                        "' value='"+ d.key + "'/></form>"
+                })};
+
 
             var drawBars = function(){barGroup
                 .each(function(data,i){
@@ -126,7 +152,7 @@ define([
                         .style('fill', function(d){return self.color(data.value.timeInterval.getValue(new Cesium.JulianDate.fromDate(d)));})
                         .on('mouseover',function(d){
                             d3.select(this).style('stroke-opacity', 1);
-                            main.outlineEntities(data.key);
+                            //main.outlineEntities(data.key);
                             tooltip.transition()
                                 .duration(200)
                                 .style("opacity", .9);
@@ -136,7 +162,7 @@ define([
                         })
                         .on('mouseout', function(){
                             d3.select(this).style('stroke-opacity', 0);
-                            main.deoutlineEntities(data.key);
+                            //main.deoutlineEntities(data.key);
                             tooltip.transition()
                                 .duration(500)
                                 .style("opacity", 0);
@@ -148,7 +174,8 @@ define([
 
                 })};
 
-            drawBars();
+            //drawBars();
+            //checkboxes();
 
             svg.append("g")
                 .attr("class", "x axis")
@@ -163,6 +190,7 @@ define([
             this.updateColor = function(startcolor, endcolor){
                 this.color.range(startcolor, endcolor);
                 drawBars();
+                checkboxes();
             };
 
         };
