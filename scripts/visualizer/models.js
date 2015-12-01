@@ -18,10 +18,14 @@ function(
 		entity.addProperty("color");
         //entity.properties.values = {};
 		entity.properties.value = 0.0;
-		entity.polygon.height = parseFloat(entity.properties.Elevation);
+		if (typeof entity.properties.Elevation !== 'undefined'){
+			entity.polygon.height = parseFloat(entity.properties.Elevation);
+		}
+		/*
         entity.label = new Cesium.LabelGraphics({
             text: entity.name
         });
+        */
     };
 
 	var Data = function(id, url){

@@ -303,7 +303,7 @@ define([
             drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
             //console.log(this.viewer.clock.currentTime);
             //console.log(this._geospatialSection.viewer.entities.values);
-            self._geospatialSection.viewer.entities.suspendEvents();
+            //self._geospatialSection.viewer.entities.suspendEvents();
             var variable = self._defaultVariableCollection.getCurrentVariable();
             //console.log(variable);
             //console.log(self._defaultDatasetCollection.getCurrentDataset(variable).data);
@@ -388,7 +388,7 @@ define([
 
             });
             */
-            self._geospatialSection.viewer.entities.resumeEvents();
+            //self._geospatialSection.viewer.entities.resumeEvents();
         }
 
         function getData(entity, variable, time){
@@ -399,6 +399,7 @@ define([
             self._geospatialSection.viewer.entities.suspendEvents();
             $.each(self._defaultEntityCollection, function(key, entities){
                 $.each(entities, function(id, entity){
+                    //console.log(entity);
                     colorEntity(entity);
                 })
             });
@@ -406,11 +407,11 @@ define([
         };
 
         function colorEntity(entity){
-            if (entity.properties.value != 0){
+            if (entity.properties.value != 0 && typeof entity.properties.value !== 'undefined'){
                 var weight = (entity.properties.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
                 entity.properties.color =  utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
             }
-            changeAlpha(entity, 0.8);
+            changeAlpha(entity, 1.0);
             /*
             entity.polygon.material = Cesium.Material.fromType('Color', {
                 color: Cesium.Color.RED.withAlpha(0.6)
@@ -437,7 +438,7 @@ define([
             $.each(entities, function(key){
                 entities[key].polygon.outline=false;
                 //entities[key].polygon.material = Cesium.Color.fromAlpha(Cesium.Color.fromCssColorString("#"+ entities[key].properties.color), 0.8);
-                changeAlpha(entities[key], 0.8);
+                changeAlpha(entities[key], 1.0);
             });
         };
 
@@ -460,7 +461,7 @@ define([
                 else{
                     for (var key in entities){
                         var entity = entities[key];
-                        changeAlpha(entity, 0.0);
+                        changeAlpha(entity, 0.2);
                     };
                 }
             }
@@ -483,7 +484,8 @@ define([
             console.log("color changed!");
             self._startColor = self._startColorPicker.spectrum('get').toHex();
             self._endColor = self._endColorPicker.spectrum('get').toHex();
-            this.updateEntityColors();
+            self.updateEntityColors();
+            self.heatmap.updateColor(["#" + self._startColor, "#" + self._endColor])
         }
 
         function drawLegend(colorMin, colorMax, rangeMin, rangeMax){

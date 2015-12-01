@@ -53,7 +53,7 @@ define([
                 .rangeRoundBands([height, 0],.1,.2)
                 .domain(names);
 
-            var color = d3.scale.linear()
+            this.color = d3.scale.linear()
                 .domain([this.lowerLimit, this.upperLimit])
                 .range(['#0AF229', '#F20505']);
 
@@ -112,7 +112,7 @@ define([
                         "' value='"+ d.key + "'><span class='lbl'> </span>               </label>"
                 });
 
-            barGroup
+            var drawBars = function(){barGroup
                 .each(function(data,i){
                     //console.log(data);
                     barGroup.selectAll('#heatBar-' + data.key)
@@ -123,7 +123,7 @@ define([
                         .attr('y', function(){return y(data.value.name);})
                         .attr('width', pointWidth)
                         .attr('height', self.barWidth)
-                        .style('fill', function(d){return color(data.value.timeInterval.getValue(new Cesium.JulianDate.fromDate(d)));})
+                        .style('fill', function(d){return self.color(data.value.timeInterval.getValue(new Cesium.JulianDate.fromDate(d)));})
                         .on('mouseover',function(d){
                             d3.select(this).style('stroke-opacity', 1);
                             main.outlineEntities(data.key);
@@ -146,7 +146,9 @@ define([
                         });
 
 
-                });
+                })};
+
+            drawBars();
 
             svg.append("g")
                 .attr("class", "x axis")
@@ -156,6 +158,12 @@ define([
             svg.append("g")
                 .attr("class", "y axis")
                 .call(yAxis);
+
+
+            this.updateColor = function(startcolor, endcolor){
+                this.color.range(startcolor, endcolor);
+                drawBars();
+            };
 
         };
 
@@ -173,30 +181,6 @@ define([
                 main.updateEntityColors()
             }
         });
-        /*
-
-        //console.log(data);
-
-        svg.selectAll('.cell')
-            .data(d3.entries(data))
-            .enter().append('rect')
-            .attr('x', function (d) { return x(d.value.day1); })
-            .attr('y', function (d) { return y(d.value.lat2); })
-            .attr('width', function (d) { return x(d.value.day2) - x(d.value.day1); })
-            .attr('height', function (d) { return y(d.value.lat1) - y(d.value.lat2); })
-            .attr('fill', function (d) { return color(d.value.altitude); });
-
-        svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(xAxis);
-
-        svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
-
-            */
-
 
 
     };

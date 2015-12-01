@@ -38,7 +38,7 @@ define([
 	};
 
     var extrudeEntity = function(entity){
-		entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.GAINSBORO, 0.8);
+		entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.GAINSBORO, 1.0);
         entity.polygon.outline = false;
         entity.polygon.extrudedHeight = entity.properties.Height;
     };
