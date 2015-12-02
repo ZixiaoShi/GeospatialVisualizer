@@ -2,8 +2,11 @@
  * Created by freeze on 2015-11-08.
  */
 define([
+    'Cesium'
 
-],function(){
+],function(
+    Cesium
+){
     var colorFromGradient = function(color2, color1, ratio){
         var hex = function(x) {
             x = x.toString(16);
@@ -22,8 +25,15 @@ define([
         return Math.ceil(value/sign)*(sign);
     };
 
+    var changeAlpha = function(entity, color, alpha){
+        var cesiumColor = Cesium.Color.fromCssColorString("#"+ color);
+        if(entity.polygon === undefined){return;}
+        entity.polygon.material = Cesium.Color.fromAlpha(cesiumColor, alpha);
+    };
+
     return{
         colorFromGradient: colorFromGradient,
-        roundUp: roundUp
+        roundUp: roundUp,
+        changeAlpha: changeAlpha
     }
 });

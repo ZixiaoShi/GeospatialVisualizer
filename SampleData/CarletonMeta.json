@@ -1,4 +1,7 @@
 {
+  "Entities": {
+
+  },
   "Variables": {
     "Electricity":"kWh",
     "Electricity Cost":"$",

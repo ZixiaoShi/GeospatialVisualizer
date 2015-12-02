@@ -55,13 +55,7 @@ define(
             .append($('<div>')
                 .addClass('visualizer-2D')
                 .attr('id', '2DSection')
-                .append($('<input>')
-                    .attr('type', 'checkbox')
-                    .attr('id', 'visualizer-brusher')
-                    .attr('value', 'Brush Selected')
-                )
-                .append($('<label>')
-                    .text('Brush Selected'))
+
             )
     };
 

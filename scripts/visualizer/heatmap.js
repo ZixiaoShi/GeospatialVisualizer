@@ -85,48 +85,54 @@ define([
                 .attr('width', width)
                 .attr('height', height);
 
-            var barGroup = chart.selectAll('g')
-                .data(d3.entries(datas))
-                .enter()
-                .append('g')
-                    .attr('id', function(d){return 'heatBar-' + d.key;})
-                    .attr('x', function(){return x(self.start);})
+            this.drawBarGroup = function() {
+                chart.selectAll('g')
+                    .data(d3.entries(datas))
+                    .enter()
+                    .append('g')
+                    .attr('id', function (d) {
+                        return 'heatBar-' + d.key;
+                    })
+                    .attr('x', function () {
+                        return x(self.start);
+                    })
                     .attr('y', function (d) {
                         return y(d.value.name);
                     })
                     .attr('width', width)
-                    .attr('height', function(){return self.barWidth})
+                    .attr('height', function () {
+                        return self.barWidth
+                    })
                     .style('stroke', '#FFFFFF ')
                     .style('stroke-opacity', 0)
-                .attr('transform', function(d){
-                   return 'translate(' + 0 + ',' + y(d.value.name) + ')'
-                })
-                .on('mouseover', function(d){
-                    main.outlineEntities(d.key)
-                })
-                .on('mouseout', function(d){
-                    main.deoutlineEntities(d.key)
-                })
-                .selectAll('rect')
-                .data(function(d){
-                    //console.log(d.value[self.dataType]._intervals._intervals[0].start);
-                    return d3.entries(d.value[self.dataType]._intervals._intervals);
-                })
-                .enter()
-                .append('rect')
-                .attr('y', function(){
-                    console.log(d3.select(this.parentNode).y);
-                    return d3.select(this.parentNode).y;
-                })
-                .attr('x', function(d){
-                    //console.log(d);
-                    return x(Cesium.JulianDate.toDate(d.value.start));
-                })
-                .attr('width', function(d){
-                    return x(Cesium.JulianDate.toDate(d.value.stop)) - x(Cesium.JulianDate.toDate(d.value.start));
-                })
-                .attr('height', self.barWidth)
-                .style('fill', function(d){return self.color(parseFloat(d.value.data));});
+                    .attr('transform', function (d) {
+                        return 'translate(' + 0 + ',' + y(d.value.name) + ')'
+                    })
+                    .on('mouseover', function (d) {
+                        main.outlineEntities(d.key)
+                    })
+                    .on('mouseout', function (d) {
+                        main.deoutlineEntities(d.key)
+                    })
+                    .selectAll('rect')
+                    .data(function (d) {
+                        //console.log(d.value[self.dataType]._intervals._intervals[0].start);
+                        return d3.entries(d.value[self.dataType]._intervals._intervals);
+                    })
+                    .enter()
+                    .append('rect')
+                    .attr('x', function (d) {
+                        //console.log(d);
+                        return x(Cesium.JulianDate.toDate(d.value.start));
+                    })
+                    .attr('width', function (d) {
+                        return x(Cesium.JulianDate.toDate(d.value.stop)) - x(Cesium.JulianDate.toDate(d.value.start));
+                    })
+                    .attr('height', self.barWidth)
+                    .style('fill', function (d) {
+                        return self.color(parseFloat(d.value.data));
+                    });
+            };
 
             var checkboxes = function(){chart.selectAll('foreignObject')
                 .data(d3.entries(datas))
@@ -143,44 +149,7 @@ define([
                         "' value='"+ d.key + "'/></form>"
                 })};
 
-
-            var drawBars = function(){barGroup
-                .each(function(data,i){
-                    //console.log(data);
-                    barGroup.selectAll('#heatBar-' + data.key)
-                        .data(dates)
-                        .enter()
-                        .append('rect')
-                        .attr('x', function(d){ return x(d);})
-                        .attr('y', function(){return y(data.value.name);})
-                        .attr('width', pointWidth)
-                        .attr('height', self.barWidth)
-                        .style('fill', function(d){return self.color(data.value.timeInterval.getValue(new Cesium.JulianDate.fromDate(d)));})
-                        .on('mouseover',function(d){
-                            d3.select(this).style('stroke-opacity', 1);
-                            //main.outlineEntities(data.key);
-                            tooltip.transition()
-                                .duration(200)
-                                .style("opacity", .9);
-                            tooltip.html(formatTime(d) + "<br/>")
-                                .style("left", (d3.event.pageX) + "px")
-                                .style("top", (d3.event.pageY) + "px");
-                        })
-                        .on('mouseout', function(){
-                            d3.select(this).style('stroke-opacity', 0);
-                            //main.deoutlineEntities(data.key);
-                            tooltip.transition()
-                                .duration(500)
-                                .style("opacity", 0);
-                        })
-                        .on('click', function(){
-                            main.focusEntities(data.key);
-                        });
-
-
-                })};
-
-            //drawBars();
+            this.drawBarGroup();
             checkboxes();
 
             svg.append("g")
@@ -195,7 +164,7 @@ define([
 
             this.updateColor = function(startcolor, endcolor){
                 this.color.range(startcolor, endcolor);
-                drawBars();
+                this.drawBarGroup();
                 checkboxes();
             };
 
