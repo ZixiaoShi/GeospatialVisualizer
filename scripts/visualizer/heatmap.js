@@ -98,6 +98,9 @@ define([
                     .attr('height', function(){return self.barWidth})
                     .style('stroke', '#FFFFFF ')
                     .style('stroke-opacity', 0)
+                .attr('transform', function(d){
+                   return 'translate(' + 0 + ',' + y(d.value.name) + ')'
+                })
                 .on('mouseover', function(d){
                     main.outlineEntities(d.key)
                 })
@@ -111,7 +114,10 @@ define([
                 })
                 .enter()
                 .append('rect')
-                .attr('y', function(){return d3.select(this.parentNode).y;})
+                .attr('y', function(){
+                    console.log(d3.select(this.parentNode).y);
+                    return d3.select(this.parentNode).y;
+                })
                 .attr('x', function(d){
                     //console.log(d);
                     return x(Cesium.JulianDate.toDate(d.value.start));
@@ -175,7 +181,7 @@ define([
                 })};
 
             //drawBars();
-            //checkboxes();
+            checkboxes();
 
             svg.append("g")
                 .attr("class", "x axis")
