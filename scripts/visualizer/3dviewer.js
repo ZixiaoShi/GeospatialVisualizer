@@ -2,9 +2,11 @@
  * 
  */
 define([
-		"Cesium"
+		"Cesium",
+	'./utilities'
 ],function(
-		Cesium
+		Cesium,
+		utilities
 ){
 	"use strict";
 
@@ -37,10 +39,18 @@ define([
 		}
 	};
 
+	var defaultColor = Cesium.Color.fromBytes(255, 255, 255, 25);
+
     var extrudeEntity = function(entity){
-		entity.polygon.material = Cesium.Color.fromAlpha(Cesium.Color.WHITE, 1.0);
-        entity.polygon.outline = false;
-        entity.polygon.extrudedHeight = entity.properties.Height;
+		//utilities.changeAlpha(entity, 'FFFFFF', 1.0);
+		try{
+			entity.polygon.material = Cesium.Color.WHITE;
+			entity.polygon.outline = false;
+			entity.polygon.extrudedHeight = entity.properties.Height;
+		}
+		catch(exp) {
+			console.log(exp);
+		}
     };
 
 

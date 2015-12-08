@@ -44,6 +44,8 @@ define([
         this._defaultDatasetCollection = new models.DatasetCollection();
         this._defaultVariableCollection = new models.VariableCollection();
         this.d3Data = [];
+        this._normalizationParameters = {};
+        this._currentDataset = undefined;
 
         this._startColorPicker = $("#StartColor").spectrum({
             color: "#" + this._startColor,
@@ -59,7 +61,7 @@ define([
             self._geospatialSection = new GeospatialSection.GeospatialSection(this.geospatialcontainer);
         }
 
-        this.initiate = function(geojsonURL,fileFormat, extrudeBool, metaUrl){
+        this.initiate = function(geojsonURL, fileFormat, extrudeBool, metaUrl){
             $.when(LoadEntities(geojsonURL,fileFormat, extrudeBool)).done(function(){
                self.LoadMeta(metaUrl);
             });
@@ -115,6 +117,10 @@ define([
                     $.each(variables, function(key,value){
                         //Create variable and append to default variable set
                         var variable = new models.Variable(key, value);
+                        $('#control-variable').append($('<option>',{
+                            value: variable.name,
+                            text: variable.name + '(' + variable.unit + ')'
+                        }));
                         self._defaultVariableCollection.addVariable(variable);
                         //if there is dataset for a variable, add it to dataset collection
                         if (meta[key]){
@@ -132,8 +138,19 @@ define([
                             }
                         }
                     });
+
+                    self._normalizationParameters = meta["Normalization"];
+                    $.each(self._normalizationParameters, function(key, value){
+                        $('#control-normalize').append($('<option>',{
+                            value: key,
+                            text: value
+                        }));
+                    });
                 }).done(function(){
+                loadDatasetOptions();
                 $.when(self.readCurrentTimeSeries()).done(function(){
+                    self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
+                    console.log(self._currentDataset);
                     console.log("start drawing");
                 });
                 //drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
@@ -271,23 +288,31 @@ define([
         function tickUpdate(){
             drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
             self._geospatialSection.viewer.entities.suspendEvents();
-            var variable = self._defaultVariableCollection.getCurrentVariable();
-            if(variable == undefined){return;}
-            var dataset = self._defaultDatasetCollection.getCurrentDataset(variable);
-            if(dataset == undefined){return;}
-            $.each(dataset.data, function(id, data){
-                if (data.timeInterval == undefined){
+            $.each(self._defaultEntityCollectionNew.values, function(id, entity){
+                if(id == undefined){return;}
+                var data = self._currentDataset.getdata(id);
+                //console.log(data);
+                if(data !== undefined){
+                    if (data.timeInterval == undefined){
+                    }
+                    else{
+                        var newValue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
+                        if ( newValue == undefined){
+                            //console.log('no data');
+                            entity.value = 0.0;
+                            entity.changeColor('FFFFFF');
+                            //entity.changeAvailability(false);
+                        }
+                        else if (entity.value !== newValue) {
+                            entity.value = newValue;
+                            var weight = (newValue-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
+                            var color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
+                            entity.changeColor(color);
+                        }
+                    }
                 }
                 else{
-                    var newvalue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
-                    if (data.value != newvalue && self._defaultEntityCollectionNew.getEntity(id) != undefined) {
-                        data.value = newvalue;
-                        var entity = self._defaultEntityCollectionNew.getEntity(id);
-                        entity.value = newvalue;
-                        var weight = (newvalue-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
-                        var color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
-                        entity.changeColor(color);
-                    }
+                    //entity.changeAvailability(false);
                 }
             });
             self._geospatialSection.viewer.entities.resumeEvents();
@@ -376,6 +401,23 @@ define([
             ctx.fillText(rangeMax,399,60);
             //console.log("legend draw complete");
         }
+
+        function loadDatasetOptions(){
+            $('#control-dataset').find('option').remove().end();
+            var datasets = self._defaultDatasetCollection.getDatasetList(self._defaultVariableCollection.getCurrentVariable());
+            if (datasets == undefined){return;}
+            $.each(datasets, function(i, dataset){
+                $('#control-dataset').append($('<option>',{
+                    value: dataset.name,
+                    text: dataset.name
+                }))
+            });
+        }
+
+        $('#control-variable').on('change', function(){
+            self._defaultVariableCollection.setVariableByName(this.value);
+            loadDatasetOptions();
+        });
     };
     return{
         Visualizer: Visualizer

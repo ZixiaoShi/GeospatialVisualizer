@@ -209,7 +209,8 @@ define([
         this.color = d3.scale.linear()
             .domain([this.lowerLimit, this.upperLimit])
             .range([this.startColor, this.stopColor]);
-        //console.log(this);
+        this.chart.html("");
+        console.log(this);
         this.Draw();
 
     };

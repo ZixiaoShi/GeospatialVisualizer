@@ -26,6 +26,7 @@ define([
     };
 
     var changeAlpha = function(entity, color, alpha){
+        if(entity == undefined){return; }
         var cesiumColor = Cesium.Color.fromCssColorString("#"+ color);
         if(entity.polygon === undefined){return;}
         entity.polygon.material = Cesium.Color.fromAlpha(cesiumColor, alpha);

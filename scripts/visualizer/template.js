@@ -51,7 +51,39 @@ define(
                         .prop('checked', false))
             ))
             .append($('<div>')
-                .addClass('visualizer-control'))
+                .addClass('visualizer-control')
+                .append($('<span>')
+                    .append($('<label>',{
+                        text: 'Variable: '
+                    }))
+                    .append($('<select>')
+                        .attr('id', 'control-variable'))
+                )
+                .append($('<br>'))
+                .append($('<span>')
+                    .append($('<label>',{
+                        text: 'Dataset: '
+                    }))
+                    .append($('<select>')
+                        .attr('id', 'control-dataset'))
+                )
+                .append($('<br>'))
+                .append($('<span>')
+                    .append($('<label>',{
+                        text: 'Normalization by: '
+                    }))
+                    .append($('<select>')
+                        .attr('id', 'control-normalize'))
+                )
+                .append($('<br>'))
+                .append($('<span>')
+                    .append($('<label>',{
+                        text: 'Category to display: '
+                    }))
+                    .append($('<select>')
+                        .attr('id', 'control-category'))
+                )
+            )
             .append($('<div>')
                 .addClass('visualizer-2D')
                 .attr('id', '2DSection')

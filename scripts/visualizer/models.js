@@ -39,11 +39,11 @@ function(
 		this.category = (typeof options.category === 'undefined') ? undefined: options.category;
 		this.cesiumEntities = [];
 		this.value = 0.0;
-		this.color = "FFFFFF";
+		this.color = 'FFFFFF';
 		this.properties = {};
 		this.alpha = (typeof options.alpha === 'undefined') ? 1.0 : options.alpha;
 		this.highlight = false;
-
+		this.height = 0.0;
 	};
 
 	Entity.prototype.addCesiumEntity = function(entity){
@@ -57,7 +57,8 @@ function(
 		var alpha = this.alpha;
 		if (input == false){
 			$.each(this.cesiumEntities, function(key,entity){
-				utilities.changeAlpha(entity, color, 0.1);
+				//console.log(entity);
+				utilities.changeAlpha(entity, color, 0.2);
 			});
 		}
 		if (input == true){
@@ -89,8 +90,9 @@ function(
 			this.color = color;
 		}
 		var alpha = this.alpha;
+		var colorInput = this.color;
 		$.each(this.cesiumEntities, function(key, cesiumEntity){
-			utilities.changeAlpha(cesiumEntity, color, alpha)
+			utilities.changeAlpha(cesiumEntity, colorInput, alpha)
 		});
 	};
 
@@ -154,51 +156,55 @@ function(
 		this.values = {};
 		this.position = 0;
 
-		this.nextDataset = function(variable){
-			if(this.position < this.values.length){
-				this.values += 1;
-				return this.getCurrentDataset(variable);
-			}
-			else{
-				return this.getCurrentDataset(variable);
-			}
-		};
-
-		this.previousDataSet = function(){
-			if(this.position > 0 ){
-				this.values -= 1;
-				return this.getCurrentDataset(variable);
-			}
-			else{
-				return this.getCurrentDataset(variable);
-			}
-		};
-
-		this.addDataset = function(dataset, variable){
-			if (dataset instanceof Dataset){
-				if (!this.values[variable.name]){
-					this.values[variable.name] = [dataset];
-				}
-				else{
-					this.values[variable.name].push(dataset);
-				}
-			}
-			else{
-				console.warn("Cannot add Dataset, it is not an instance of Dataset");
-			}
-		};
-
 		this.getDataset = function(name){
 			return getByName(this.values, name);
 		}
 	};
 
-	DatasetCollection.prototype.getCurrentDataset = function(variable){
-		//console.log(self.values);
+	DatasetCollection.prototype.nextDataset = function(variable){
+		if(this.position < this.values.length){
+			this.position += 1;
+			return this.getCurrentDataset(variable);
+		}
+		else{
+			return this.getCurrentDataset(variable);
+		}
+	};
+
+	DatasetCollection.prototype.previousDataSet = function(variable){
+		if(this.position > 0 ){
+			this.position -= 1;
+			return this.getCurrentDataset(variable);
+		}
+		else{
+			return this.getCurrentDataset(variable);
+		}
+	};
+
+	DatasetCollection.prototype.addDataset = function(dataset, variable){
+		if (dataset instanceof Dataset){
+			if (!this.values[variable.name]){
+				this.values[variable.name] = [dataset];
+			}
+			else{
+				this.values[variable.name].push(dataset);
+			}
+		}
+		else{
+			console.warn("Cannot add Dataset, it is not an instance of Dataset");
+		}
+	};
+
+	DatasetCollection.prototype.getDatasetList = function(variable){
 		var dataset = this.values[variable.name];
 		if (dataset === undefined ){return undefined}
-		var data = dataset[this.position];
-		return data
+		return dataset;
+	};
+
+	DatasetCollection.prototype.getCurrentDataset = function(variable){
+		var dataset = this.values[variable.name];
+		if (dataset === undefined ){return undefined}
+		return dataset[this.position];
 	};
 
 	//Those two classes define the variables that are to be visualized
@@ -207,42 +213,55 @@ function(
 		this.unit = unit;
 	};
 
-	var VariableCollection = function(){
+	var VariableCollection = function() {
 		this.values = [];
 		this.position = 0;
-		this.getCurrentVariable = function(){
-			//console.log(this.values);
-			//console.log(this.values[0]);
-			return this.values[this.position]};
+	}
+	VariableCollection.prototype.previousVariable = function(){
+		if(this.position > 0 ){
+			this.position -= 1;
+			return this.getCurrentVariable();
+		}
+		else{
+			return this.getCurrentVariable();
+		}
+	};
 
-		this.nextVairable = function(){
-			if(this.position < this.values.length){
-				this.position += 1;
-				return this.getCurrentVariable();
-			}
-			else{
-				return this.getCurrentVariable();
-			}
-		};
+	VariableCollection.prototype.nextVairable = function(){
+		if(this.position < this.values.length){
+			this.position += 1;
+			return this.getCurrentVariable();
+		}
+		else{
+			return this.getCurrentVariable();
+		}
+	};
 
-		this.previousVariable = function(){
-			if(this.position > 0 ){
-				this.position -= 1;
-				return this.getCurrentVariable();
-			}
-			else{
-				return this.getCurrentVariable();
-			}
-		};
+	VariableCollection.prototype.getCurrentVariable = function(){
+		//console.log(this.values);
+		//console.log(this.values[0]);
+		return this.values[this.position]
+	};
 
-		this.addVariable = function(variable){
-			if (variable instanceof Variable){
-				this.values.push(variable);
+	VariableCollection.prototype.addVariable = function(variable){
+		if (variable instanceof Variable){
+			this.values.push(variable);
+		}
+		else{
+			console.warn("Cannot add Variable, it is not an instance of Variable");
+		}
+	};
+
+	VariableCollection.prototype.setVariableByName = function(name){
+		var index = -1;
+		for(var i = 0; i < this.values.length; i += 1) {
+			if(this.values[i].name === name) {
+				index =  i;
 			}
-			else{
-				console.warn("Cannot add Variable, it is not an instance of Variable");
-			}
-		};
+		}
+		if (index !== -1){
+			this.position = index;
+		}
 	};
 
 
