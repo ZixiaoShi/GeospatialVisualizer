@@ -46,6 +46,8 @@ define([
         this.d3Data = [];
         this._normalizationParameters = {};
         this._currentDataset = undefined;
+        this._customProperties = [];
+        this._currentData = undefined;
 
         this._startColorPicker = $("#StartColor").spectrum({
             color: "#" + this._startColor,
@@ -91,7 +93,6 @@ define([
                 return dfd;
             }
             return dataSource.load(geojsonURL).then(function(datasource){
-                //console.log('read datasource finished!');
                 self._geospatialSection.viewer.dataSources.add(datasource);
                 self._geospatialSection.viewer.flyTo(datasource.entities);
                 var entities = datasource.entities;
@@ -102,11 +103,12 @@ define([
                     if (extrudeBool == true){
                         GeospatialSection.extrudeEntity(cesiumEntity);
                     }
-                    self._defaultEntityCollectionNew.AddCesiumEntity(cesiumEntity);
+                    self._defaultEntityCollectionNew.AddCesiumEntity(cesiumEntity, self._customProperties);
                 }
                 console.log(self._defaultEntityCollectionNew);
                 entities.resumeEvents();
                 //return dfd;;
+                populateCategories();
             });
         };
 
@@ -130,7 +132,8 @@ define([
                                 for (var dataid in datasets[datasetName].Data){
                                     var data = new models.Data(dataid, datasets[datasetName].Data[dataid]["url"]);
                                     if (data.name === undefined){
-                                        data.name = self._defaultEntityCollectionNew.getEntity(dataid).name;
+                                        //data.name = self._defaultEntityCollectionNew.getEntity(dataid).name;
+                                        data.name = dataid;
                                     }
                                     dataset.adddata(dataid, data);
                                 }
@@ -140,12 +143,18 @@ define([
                     });
 
                     self._normalizationParameters = meta["Normalization"];
+                    $('#control-normalize').append($('<option>',{
+                        value: "None",
+                        text: "None"
+                    }));
                     $.each(self._normalizationParameters, function(key, value){
                         $('#control-normalize').append($('<option>',{
                             value: key,
                             text: value
                         }));
                     });
+                    self._customProperties = meta["Custom_Properties"];
+                    //console.log(self._customProperties);
                 }).done(function(){
                 loadDatasetOptions();
                 $.when(self.readCurrentTimeSeries()).done(function(){
@@ -236,20 +245,28 @@ define([
         function addTimeSeries(variable, timeseries, data){
             var sampled = new Cesium.TimeIntervalCollectionProperty();
             var pos = 0;
-            $.each(timeseries, function(key, values){
+            for (var key in timeseries){
+                if ( timeseries.hasOwnProperty(key) ){
+                    var values = timeseries[key];
+                    var value = parseFloat(values[variable.name].replace(',', ''));
 
-                var value = values[variable.name].replace(',', '');
-
-                if (value > self._defaultRangeMax && $('#constantRange').prop('checked')==false){
-                    self._defaultRangeMax = utilities.roundUp(value,1);
+                    if (value > self._defaultRangeMax && $('#constantRange').prop('checked')==false){
+                        self._defaultRangeMax = utilities.roundUp(value,1);
+                    }
+                    sampled.intervals.addInterval(Cesium.TimeInterval.fromIso8601({
+                        iso8601: key,
+                        isStartIncluded: true,
+                        isStopIncluded: false,
+                        data: value
+                    }));
+                    if (value < data.minimum){
+                        data.minimum = value;
+                    }
+                    if (value > data.maximum){
+                        data.maximum = value;
+                    }
                 }
-               sampled.intervals.addInterval(Cesium.TimeInterval.fromIso8601({
-                   iso8601: key,
-                   isStartIncluded: true,
-                   isStopIncluded: false,
-                   data: value
-               }));
-            });
+            }
             data.timeInterval = sampled;
             var startDate = Cesium.JulianDate.toDate(sampled.intervals.get(0).start);
             var stopDate = Cesium.JulianDate.toDate(sampled.intervals.get(sampled.intervals.length-1).stop);
@@ -297,16 +314,29 @@ define([
                     }
                     else{
                         var newValue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
+                        var normalization  = $('#control-normalize').val();
                         if ( newValue == undefined){
                             //console.log('no data');
                             entity.value = 0.0;
                             entity.changeColor('FFFFFF');
-                            //entity.changeAvailability(false);
+                            return true;
                         }
-                        else if (entity.value !== newValue) {
+                        if (normalization !== 'None'){
+                            newValue = newValue/entity.properties[normalization];
+                        }
+                        if (entity.value !== newValue) {
                             entity.value = newValue;
                             var weight = (newValue-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
-                            var color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
+                            var color = 'FFFFFF';
+                            if (weight > 1.0){
+                                color = '000000';
+                            }
+                            else if (weight < 0.0){
+                                color = 'FFFFFF'
+                            }
+                            else{
+                                color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
+                            }
                             entity.changeColor(color);
                         }
                     }
@@ -414,10 +444,75 @@ define([
             });
         }
 
+        function changeDataset(){
+            self._defaultDatasetCollection.setCurrentDataset(self._defaultVariableCollection.getCurrentVariable(), $('#control-dataset').value);
+        }
+
+        $('#control-dataset-confirm').on('click', function(){
+            changeDataset();
+        });
+
         $('#control-variable').on('change', function(){
             self._defaultVariableCollection.setVariableByName(this.value);
             loadDatasetOptions();
         });
+
+        function populateCategories(){
+            $('#control-category').find('option').remove().end();
+            $('#control-category').append($('<option>', {
+                value: 'All',
+                text: 'All'
+            }));
+            $.each(self._defaultEntityCollectionNew.categories, function(key){
+                $('#control-category').append($('<option>', {
+                    value: key,
+                    text: key
+                }));
+            })
+        }
+
+        $('#control-category').on('change', function(){
+            self._defaultEntityCollectionNew.highLightCategory(this.value)
+        });
+
+        $('#control-normalize').on('change', function(){
+            self._defaultRangeMax = 0.0;
+            updateMaximum();
+            console.log(self._defaultRangeMax);
+        });
+
+        function updateMaximum(){
+            var datas = self.getCurrentData().data;
+            var normalization = $('#control-normalize').val();
+            $.each(datas, function(id, data){
+                var entity = self._defaultEntityCollectionNew.getEntity(id);
+                var newValue = 0.0;
+                if (normalization == "None"){
+                    newValue = data.maximum
+                }
+                //console.log(entity);
+                else if (entity !== undefined){
+                    if (entity.properties[normalization] !== undefined){
+                        newValue = data.maximum/self._defaultEntityCollectionNew.getEntity(id).properties[normalization];
+                    }
+                }
+                if (newValue > self._defaultRangeMax){
+                    self._defaultRangeMax  = utilities.roundUp(newValue,1);
+                }
+            });
+        }
+
+        function updateCurrentData(){
+            $.each(data.timeInterval.intervals._intervals, function(i, interval){
+                var value = parseFloat(interval.data);
+                if (value/parseFloat(entity.properties[normalization])){}
+            });
+        }
+
+    };
+
+    Visualizer.prototype.getCurrentData = function(){
+      return  this._defaultDatasetCollection.getCurrentDataset(this._defaultVariableCollection.getCurrentVariable());
     };
     return{
         Visualizer: Visualizer

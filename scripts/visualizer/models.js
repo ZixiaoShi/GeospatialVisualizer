@@ -102,15 +102,25 @@ function(
 
 	var EntityCollection = function(){
 		this.values = {};
-
+		this.categories = {};
 	};
 
-	EntityCollection.prototype.AddCesiumEntity = function(cesiumEntity){
+	EntityCollection.prototype.AddCesiumEntity = function(cesiumEntity, properties){
 		if (!(cesiumEntity.properties.Id in this.values)){
 			var newEntity = new Entity(cesiumEntity.properties.Id, {
 				name: cesiumEntity.properties.Name,
 				category: cesiumEntity.properties.Category
 			});
+			if( this.categories[newEntity.category] == undefined){
+				this.categories[newEntity.category] = [newEntity.id];
+			}
+			else{
+				this.categories[newEntity.category].push(newEntity.id);
+			}
+
+			for(var i=0; i<properties.length; i++){
+				newEntity.properties[properties[i]] = cesiumEntity.properties[properties[i]];
+			}
 			newEntity.addCesiumEntity(cesiumEntity);
 			this.values[cesiumEntity.properties.Id] = newEntity;
 		}
@@ -121,6 +131,24 @@ function(
 
 	EntityCollection.prototype.getEntity = function(id){
 		return this.values[id];
+	};
+
+	EntityCollection.prototype.highLightCategory = function(category){
+		if (category == "All"){
+			$.each(this.values, function(id, entity){
+				entity.changeAvailability(true);
+			});
+		}
+		else {
+			$.each(this.values, function(id, entity){
+				if (entity.category == category){
+					entity.changeAvailability(true);
+				}
+				else{
+					entity.changeAvailability(false);
+				}
+			});
+		}
 	};
 
 	var Data = function(id, url){
@@ -138,6 +166,8 @@ function(
 		this.value = 0.0;
 		this.color = undefined;
 		this.name = undefined;
+		this.minimum = 0.0;
+		this.maximum = 0.0;
 	};
 
 	var Dataset = function(name, settings){
@@ -207,6 +237,20 @@ function(
 		return dataset[this.position];
 	};
 
+	DatasetCollection.prototype.setCurrentDataset = function(variable, name){
+		var dataset = this.values[variable.name];
+		if(dataset == undefined) {return; }
+		var index = -1;
+		for(var i = 0; i < dataset.length; i += 1) {
+			if(dataset[i].name === name) {
+				index =  i;
+			}
+		}
+		if (index !== -1){
+			this.position = index;
+		}
+	};
+
 	//Those two classes define the variables that are to be visualized
 	var Variable = function(name, unit){
 		this.name = name;
@@ -216,7 +260,8 @@ function(
 	var VariableCollection = function() {
 		this.values = [];
 		this.position = 0;
-	}
+	};
+
 	VariableCollection.prototype.previousVariable = function(){
 		if(this.position > 0 ){
 			this.position -= 1;

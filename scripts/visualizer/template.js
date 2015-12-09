@@ -66,6 +66,10 @@ define(
                     }))
                     .append($('<select>')
                         .attr('id', 'control-dataset'))
+                    .append($('<button>',{
+                        id: 'control-dataset-confirm',
+                        text: 'Change Dataset'
+                    }))
                 )
                 .append($('<br>'))
                 .append($('<span>')
