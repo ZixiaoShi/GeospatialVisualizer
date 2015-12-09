@@ -90,6 +90,9 @@ function(
 			this.color = color;
 		}
 		var alpha = this.alpha;
+		if (this.available == false){
+			alpha = 0.2;
+		}
 		var colorInput = this.color;
 		$.each(this.cesiumEntities, function(key, cesiumEntity){
 			utilities.changeAlpha(cesiumEntity, colorInput, alpha)

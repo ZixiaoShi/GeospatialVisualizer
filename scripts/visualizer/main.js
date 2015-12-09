@@ -47,7 +47,6 @@ define([
         this._normalizationParameters = {};
         this._currentDataset = undefined;
         this._customProperties = [];
-        this._currentData = undefined;
 
         this._startColorPicker = $("#StartColor").spectrum({
             color: "#" + this._startColor,
@@ -157,13 +156,14 @@ define([
                     //console.log(self._customProperties);
                 }).done(function(){
                 loadDatasetOptions();
+                /*
                 $.when(self.readCurrentTimeSeries()).done(function(){
                     self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
-                    console.log(self._currentDataset);
                     console.log("start drawing");
                 });
                 //drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
                 console.log(self._defaultDatasetCollection);
+                */
                 console.log(self._defaultVariableCollection);
             });
         };
@@ -211,35 +211,15 @@ define([
         }
 
         this.readCurrentTimeSeries = function(){
+            var dfd = $.Deferred();
             var variable = self._defaultVariableCollection.getCurrentVariable();
             var dataset = this._defaultDatasetCollection.getCurrentDataset(variable);
             var readProcess = self.readTimeSeriesFromURL(dataset, variable);
             readProcess.done(function(){
-                console.log("all done read time series");
                 self._dataDrawn = true;
-
-                self.planarSection = new PlanarSection.HeatMap('#2DSection', self._defaultEntityCollectionNew, {
-                    start: self._defaultTimeMin,
-                    stop: self._defaultTimeMax,
-                    lowerLimit: self._defaultRangeMin,
-                    upperLimit: self._defaultRangeMax
-                });
-
-                self.planarSection.Initiate(self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data);
-                console.log(self.planarSection);
-                self.planarSection.Draw();
-
-                /*
-                self.heatmap = new heatmap.heatMap('#2DSection', self);
-                self.heatmap.start = self._defaultTimeMin;
-                self.heatmap.end = self._defaultTimeMax;
-                self.heatmap.drawHeatMap(
-                    self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable()).data,
-                    self._defaultRangeMin,
-                    self._defaultRangeMax
-                );
-                */
+                dfd.resolve();
             });
+            return dfd.promise();
         };
 
         function addTimeSeries(variable, timeseries, data){
@@ -299,11 +279,29 @@ define([
             //console.log("legend draw complete");
         }
 
-        var helper = new Cesium.EventHelper();
-        helper.add(this._geospatialSection.viewer.clock.onTick, tickUpdate, this);
+        function drawPlanarSection(){
+            self.planarSection = new PlanarSection.HeatMap('#2DSection', self._defaultEntityCollectionNew, {
+                start: self._defaultTimeMin,
+                stop: self._defaultTimeMax,
+                lowerLimit: self._defaultRangeMin,
+                upperLimit: self._defaultRangeMax
+            });
+            //console.log(self._currentDataset.data);
+            self.planarSection.Initiate(self._currentDataset.data);
+            self.planarSection.Draw();
+        }
 
-        function tickUpdate(){
-            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+        var helper = new Cesium.EventHelper();
+        helper.add(this._geospatialSection.viewer.clock.onTick, clockUpdate, this);
+
+        function clockUpdate(){
+            tickUpdate(false);
+        }
+
+        function tickUpdate(all){
+            if (self._currentDataset == undefined){
+                return;
+            }
             self._geospatialSection.viewer.entities.suspendEvents();
             $.each(self._defaultEntityCollectionNew.values, function(id, entity){
                 if(id == undefined){return;}
@@ -314,17 +312,14 @@ define([
                     }
                     else{
                         var newValue = data.getValue(self._geospatialSection.viewer.clock.currentTime);
-                        var normalization  = $('#control-normalize').val();
                         if ( newValue == undefined){
                             //console.log('no data');
                             entity.value = 0.0;
                             entity.changeColor('FFFFFF');
+                            entity.changeAvailability(false);
                             return true;
                         }
-                        if (normalization !== 'None'){
-                            newValue = newValue/entity.properties[normalization];
-                        }
-                        if (entity.value !== newValue) {
+                        if (entity.value !== newValue || all == true) {
                             entity.value = newValue;
                             var weight = (newValue-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
                             var color = 'FFFFFF';
@@ -342,21 +337,11 @@ define([
                     }
                 }
                 else{
-                    //entity.changeAvailability(false);
+                    entity.changeAvailability(false);
                 }
             });
             self._geospatialSection.viewer.entities.resumeEvents();
         }
-
-        this.updateEntityColors = function(){
-            self._geospatialSection.viewer.entities.suspendEvents();
-            $.each(self._defaultEntityCollectionNew.values, function(key, entity){
-                var weight = (entity.value-self._defaultRangeMin)/(self._defaultRangeMax - self._defaultRangeMin);
-                var color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
-                entity.changeColor(color);
-            });
-            self._geospatialSection.viewer.entities.resumeEvents();
-        };
 
         //uses the id of the data to outline the entities
         this.outlineEntities = function(id){
@@ -409,7 +394,8 @@ define([
             console.log("color changed!");
             self._startColor = self._startColorPicker.spectrum('get').toHex();
             self._endColor = self._endColorPicker.spectrum('get').toHex();
-            self.updateEntityColors();
+            tickUpdate(true);
+            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
             self.planarSection.updateColor("#" + self._startColor, "#" + self._endColor)
         }
 
@@ -424,11 +410,15 @@ define([
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, 400, 40);
             ctx.font = "15px Arial";
-            ctx.fillText(rangeMin,1,60);
+            var unit = "";
+            if(self._defaultVariableCollection.getCurrentVariable() !== undefined){
+                unit = self._defaultVariableCollection.getCurrentVariable().unit;
+            };
+            ctx.fillText(rangeMin + unit,1,60);
             ctx.textAlign = "center";
-            ctx.fillText((((rangeMin+rangeMax)/2)).toString(), 200, 60);
+            ctx.fillText((((rangeMin+rangeMax)/2)).toString() + unit, 200, 60);
             ctx.textAlign = "right";
-            ctx.fillText(rangeMax,399,60);
+            ctx.fillText(rangeMax + unit,399,60);
             //console.log("legend draw complete");
         }
 
@@ -446,6 +436,15 @@ define([
 
         function changeDataset(){
             self._defaultDatasetCollection.setCurrentDataset(self._defaultVariableCollection.getCurrentVariable(), $('#control-dataset').value);
+            var readProcess = self.readCurrentTimeSeries();
+            readProcess.done(function(){
+                self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
+                updateMaximum();
+                drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+                drawPlanarSection();
+                $('control-normalize').val("None");
+            });
+
         }
 
         $('#control-dataset-confirm').on('click', function(){
@@ -477,38 +476,72 @@ define([
 
         $('#control-normalize').on('change', function(){
             self._defaultRangeMax = 0.0;
+            normalizeCurrentData();
             updateMaximum();
-            console.log(self._defaultRangeMax);
+            drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+            self.planarSection.update("#" + self._startColor, "#" + self._endColor, self._defaultRangeMin, self._defaultRangeMax, self._currentDataset.data, self._defaultEntityCollectionNew);
+            //console.log(self._currentDataset);
+            //console.log(self._defaultRangeMax);
         });
 
         function updateMaximum(){
-            var datas = self.getCurrentData().data;
-            var normalization = $('#control-normalize').val();
+            var datas = self._currentDataset.data;
+            self._defaultRangeMax = undefined;
             $.each(datas, function(id, data){
+                if (self._defaultRangeMax == undefined || self._defaultRangeMax < data.maximum){
+                    self._defaultRangeMax = utilities.roundUp(data.maximum, 1.0);
+                }
+            });
+        }
+
+        function normalizeCurrentData(){
+            var normalization = $('#control-normalize').val();
+            var dataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
+            //self._currentDataset = JSON.parse(JSON.stringify(self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable())));
+            self._currentDataset = new models.Dataset(dataset.name + " normalized by " + normalization, dataset.settings);
+            console.log(self._currentDataset);
+            var datas = dataset.data;
+            $.each(datas, function(id, data){
+                var newdata = new models.Data(id, "");
+                newdata.timeInterval = new Cesium.TimeIntervalCollectionProperty();
+                self._currentDataset.adddata(id, newdata);
+
                 var entity = self._defaultEntityCollectionNew.getEntity(id);
-                var newValue = 0.0;
-                if (normalization == "None"){
-                    newValue = data.maximum
+                if (entity == undefined){return true; }
+
+                newdata.name = entity.name;
+
+                var parameter = 1.0 ;
+                if (normalization !== "None" && entity.properties[normalization] !== undefined){
+                    parameter = parseFloat(entity.properties[normalization])
                 }
-                //console.log(entity);
-                else if (entity !== undefined){
-                    if (entity.properties[normalization] !== undefined){
-                        newValue = data.maximum/self._defaultEntityCollectionNew.getEntity(id).properties[normalization];
+                $.each(data.timeInterval.intervals._intervals, function(i, interval){
+                    var value = parseFloat(interval.data)/parameter;
+                    if (newdata.maximum == undefined || value > newdata.maximum){
+                        newdata.maximum = value;
                     }
-                }
-                if (newValue > self._defaultRangeMax){
-                    self._defaultRangeMax  = utilities.roundUp(newValue,1);
-                }
+                    if (newdata.minimum == undefined || value < newdata.minimum){
+                        newdata.minimum = value;
+                    }
+                    newdata.timeInterval.intervals.addInterval(new Cesium.TimeInterval({
+                        start: interval.start,
+                        stop: interval.stop,
+                        isStartIncluded: interval.isStartIncluded,
+                        isStopIncluded: interval.isStopIncluded,
+                        data: value
+                    }));
+                });
             });
         }
 
-        function updateCurrentData(){
-            $.each(data.timeInterval.intervals._intervals, function(i, interval){
-                var value = parseFloat(interval.data);
-                if (value/parseFloat(entity.properties[normalization])){}
-            });
-        }
-
+        var geospatialScreenHandler = new Cesium.ScreenSpaceEventHandler(this._geospatialSection.viewer.scene.canvas);
+        geospatialScreenHandler.setInputAction(function(dbClick){
+            //console.log(dbClick.position);
+            var cesiumEntity = utilities.pickEntity(self._geospatialSection.viewer, dbClick.position);
+            if (cesiumEntity == undefined){return;}
+            var entity = self._defaultEntityCollectionNew.getEntity(cesiumEntity.properties.Id);
+            entity.changeAvailability(true);
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
     };
 
     Visualizer.prototype.getCurrentData = function(){

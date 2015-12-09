@@ -19,7 +19,7 @@ define([
 			geoCoder: false,
 			animation: true,
 			navigationInstructionsInitiallyVisible: true,
-			infoBox: true,
+			infoBox: false,
 			sceneModePicker: false,
 			scene3DOnly: false,
 			timeline: true,
@@ -37,6 +37,7 @@ define([
 				}
 			}
 		}
+
 	};
 
 	var defaultColor = Cesium.Color.fromBytes(255, 255, 255, 25);

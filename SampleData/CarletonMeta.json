@@ -54,6 +54,9 @@
         "41":{
           "url": "SampleData/continuous_data/41_electricity_month.json"
         },
+        "42":{
+          "url": "SampleData/continuous_data/42_electricity_month.json"
+        },
         "44":{
           "url": "SampleData/continuous_data/44_electricity_month.json"
         }

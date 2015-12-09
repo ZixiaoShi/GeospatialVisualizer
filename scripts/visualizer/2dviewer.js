@@ -103,7 +103,7 @@ define([
                 .trigger('change');
         });
 
-        this.xAisLine = this.svg.append("g")
+        this.xAxisLine = this.svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0,0)")
             .call(this.xAxis);
@@ -185,8 +185,12 @@ define([
             })
             .append("xhtml:body")
             .html(function(d){
+                var checked = '';
+                if (self.entityCollection.getEntity(d.key).available == true){
+                    checked = 'checked';
+                }
                 return "<form><input type='checkbox' class='brush' id='brush-" + d.key +
-                    "' value='"+ d.key + "' checked='true'/></form>"
+                    "' value='"+ d.key + "' " + checked + "/></form>"
             });
 
         $('.brush').change(function(){
@@ -213,6 +217,59 @@ define([
         console.log(this);
         this.Draw();
 
+    };
+
+    Heatmap.prototype.update = function(startColor, stopColor, startRange, stopRange, data, entityCollection){
+        this.startColor = startColor;
+        this.stopColor = stopColor;
+        this.lowerLimit = startRange;
+        this.upperLimit = stopRange;
+        this.chart.html("");
+        this.datas = data;
+        this.names = [];
+        this.entityCollection = entityCollection;
+
+        for (var key in data) {
+            this.names.push(data[key].name);
+        }
+
+
+        this.ids = Object.keys(data);
+
+        this.x = d3.time.scale()
+            .range([0, this.width])
+            .domain([this.start, this.stop]);
+
+        this.y = d3.scale.ordinal()
+            .rangeRoundBands([this.height, 0], .1, .2)
+            .domain(this.names);
+
+        this.color = d3.scale.linear()
+            .domain([this.lowerLimit, this.upperLimit])
+            .range([this.startColor, this.stopColor]);
+
+        this.xAxis = d3.svg.axis()
+            .scale(this.x)
+            .ticks(this.ticks)
+            .orient('top');
+
+        this.yAxis = d3.svg.axis()
+            .scale(this.y)
+            .orient('right');
+
+        this.xAxisLine.remove();
+        this.yAxisLine.remove();
+
+        this.xAxisLine = this.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0,0)")
+            .call(this.xAxis);
+
+        this.yAxisLine = this.svg.append("g")
+            .attr("class", "y axis")
+            .call(this.yAxis);
+
+        this.Draw()
     };
 
 

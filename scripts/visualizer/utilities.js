@@ -32,9 +32,28 @@ define([
         entity.polygon.material = Cesium.Color.fromAlpha(cesiumColor, alpha);
     };
 
+    /**
+     * Returns the top-most Entity at the provided window coordinates
+     * or undefined if no Entity is at that location.
+     *
+     * @param {Cartesian2} windowPosition The window coordinates.
+     * @returns {Entity} The picked Entity or undefined.
+     */
+    var pickEntity = function(viewer, windowPosition){
+        var picked = viewer.scene.pick(windowPosition);
+        if (Cesium.defined(picked)) {
+            var id = Cesium.defaultValue(picked.id, picked.primitive.id);
+            if (id instanceof Cesium.Entity) {
+                return id;
+            }
+        }
+        return undefined;
+    };
+
     return{
         colorFromGradient: colorFromGradient,
         roundUp: roundUp,
-        changeAlpha: changeAlpha
+        changeAlpha: changeAlpha,
+        pickEntity: pickEntity
     }
 });
