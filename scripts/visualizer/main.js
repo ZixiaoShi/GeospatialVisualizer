@@ -1,6 +1,7 @@
 define([
     'jquery',
     'Cesium',
+    'noUiSlider',
     './template',
     './3dviewer',
     './models',
@@ -10,6 +11,7 @@ define([
 ],function(
     $,
     Cesium,
+    noUiSlider,
     template,
     GeospatialSection,
     models,
@@ -47,6 +49,18 @@ define([
         this._normalizationParameters = {};
         this._currentDataset = undefined;
         this._customProperties = [];
+
+        this.slider = noUiSlider.create(document.getElementById('visualizer-slider'),{
+            start: [0.0, 100.0],
+            connect: true,
+            range:{
+                'min': 0.0,
+                'max': 100.0
+            }
+        });
+
+        this._customMin = document.getElementById('StartRange');
+        this._customMax = document.getElementById('EndRange');
 
         this._startColorPicker = $("#StartColor").spectrum({
             color: "#" + this._startColor,
@@ -332,6 +346,14 @@ define([
                             else{
                                 color = utilities.colorFromGradient(self._startColor.toString(),self._endColor.toString(),weight);
                             }
+                            if ($('#customRange').is(':checked')){
+                                if (newValue > self._customMax.value){
+                                    color = '000000';
+                                }
+                                if (newValue < self._customMin.value){
+                                    color = 'FFFFFF'
+                                }
+                            }
                             entity.changeColor(color);
                         }
                     }
@@ -492,6 +514,13 @@ define([
                     self._defaultRangeMax = utilities.roundUp(data.maximum, 1.0);
                 }
             });
+            self.slider.updateOptions({
+                range: {
+                    'min': self._defaultRangeMin,
+                    'max': self._defaultRangeMax
+                }
+            });
+            self.slider.set([self._defaultRangeMin, self._defaultRangeMax]);
         }
 
         function normalizeCurrentData(){
@@ -538,10 +567,59 @@ define([
         geospatialScreenHandler.setInputAction(function(dbClick){
             //console.log(dbClick.position);
             var cesiumEntity = utilities.pickEntity(self._geospatialSection.viewer, dbClick.position);
-            if (cesiumEntity == undefined){return;}
+            if (cesiumEntity == undefined){
+                $('.visualizer-infobox-table').html('');
+                return;
+            }
             var entity = self._defaultEntityCollectionNew.getEntity(cesiumEntity.properties.Id);
-            entity.changeAvailability(true);
+            //entity.changeAvailability(true);
+            $('.visualizer-infobox-table').html('');
+            var unit = self._defaultVariableCollection.getCurrentVariable().unit;
+            console.log(entity.name);
+            addinfoLine('Name', entity.name);
+            addinfoLine('Current Value', entity.value + unit);
+            for (var key in entity.properties){
+                addinfoLine(key, entity.properties[key]);
+            }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+        function addinfoLine(key, value){
+            $('.visualizer-infobox-table')
+                .append($('<tr>')
+                    .append($('<td>',{
+                        text: key
+                    }))
+                    .append($('<td>', {
+                        text: value.toString()
+                    }))
+                )
+        }
+
+
+        this._customMin.addEventListener('change', function(){
+            self.slider.set(this.value, null);
+        });
+
+        this._customMax.addEventListener('change', function(){
+            self.slider.set(null, this.value);
+        });
+
+        this.slider.on('update', function(values, handle){
+            var value = values[handle];
+
+            if ( handle ) {
+                self._customMax.value = value;
+            } else {
+                self._customMin.value = value;
+            }
+
+            tickUpdate(true);
+        });
+
+        $('#customRange').on('click', function(){
+           tickUpdate(true);
+        });
+
     };
 
     Visualizer.prototype.getCurrentData = function(){

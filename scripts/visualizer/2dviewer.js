@@ -116,7 +116,6 @@ define([
 
     Heatmap.prototype.Draw = function(){
 
-
         var self = this;
         this.rectangles =
             this.chart.selectAll('g')

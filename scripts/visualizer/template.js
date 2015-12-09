@@ -18,6 +18,10 @@ define(
                     .attr('width', '400px')
                     .attr('height', '70px')
                 )
+                .append($('<div>',{
+                    id: 'visualizer-slider',
+                    class: 'visualizer-slider'
+                }))
                 .append($('<form>')
                     .addClass('visualizer-customize')
                     .append($('<input>')
@@ -38,15 +42,14 @@ define(
                         .prop('type', 'text')
                         .attr('id','EndColor')
                     )
-                    .append($('<input>')
-                        .addClass('visualizer-customize-submit')
-                        .prop('type', 'button')
-                        .attr('value', 'Customize')
+                    .append($('<label>')
+                        .attr('value', 'Customize Range')
+                        .text('Customize')
                     )
                     .append($('<input>')
                         .addClass('visualizer-customize-keepRange')
                         .prop('type','checkbox')
-                        .attr('id', 'constantRange')
+                        .attr('id', 'customRange')
                         .attr('value', 'Keep Range')
                         .prop('checked', false))
             ))
@@ -92,6 +95,15 @@ define(
                 .addClass('visualizer-2D')
                 .attr('id', '2DSection')
 
+            )
+            .append($('<div>', {
+                class: 'visualizer-infobox',
+                id: 'visualizer-infobox'
+            })
+                .append($('<table>',{
+                    class: 'visualizer-infobox-table',
+                    id: 'visualizer-infobox-table'
+                }))
             )
     };
 

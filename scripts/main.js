@@ -8,12 +8,16 @@ require.config({
         spectrum: 'lib/spectrum',
         //underscore: 'lib/underscore-min',
         Cesium: 'lib/Cesium/Cesium',
-        d3: 'lib/d3.min'
+        d3: 'lib/d3.min',
+        noUiSlider: 'lib/nouislider'
     },
     //This uses the build version of Cesium
     shim: {
         Cesium:{
             exports: 'Cesium'
+        },
+        noUiSlider: {
+            exports: 'noUiSlider'
         }
     },
     packages: ['visualizer']
@@ -25,6 +29,7 @@ require(['visualizer', 'jquery','spectrum'],function(visualizer, $,spectrum){
     loadCss('css/spectrum.css');
     loadCss("scripts/lib/Cesium/Widgets/widgets.css");
     loadCss("css/visualizer.css");
+    loadCss("css/nouislider.css");
     //loadjs("scripts/Cesium/Cesium.js");
     console.log(visualizer === undefined);
     var vis = new visualizer.Visualizer('#GeospatialContainer');
