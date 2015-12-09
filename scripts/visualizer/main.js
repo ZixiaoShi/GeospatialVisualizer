@@ -2,6 +2,7 @@ define([
     'jquery',
     'Cesium',
     'noUiSlider',
+    'd3',
     './template',
     './3dviewer',
     './models',
@@ -12,6 +13,7 @@ define([
     $,
     Cesium,
     noUiSlider,
+    d3,
     template,
     GeospatialSection,
     models,
@@ -317,6 +319,9 @@ define([
                 return;
             }
             self._geospatialSection.viewer.entities.suspendEvents();
+            if (self.planarSection !== undefined){
+                self.planarSection.timeLine(Cesium.JulianDate.toDate(self._geospatialSection.viewer.clock.currentTime));
+            }
             $.each(self._defaultEntityCollectionNew.values, function(id, entity){
                 if(id == undefined){return;}
                 var data = self._currentDataset.getdata(id);

@@ -26,6 +26,7 @@ define([
         this.entityCollection = entityCollection;
         this.margin = {top: 20, right: 20, bottom: 30, left: 30};
         this.ticks = 5.0;
+        this.referenceLine = undefined;
     };
 
     Heatmap.prototype.Initiate= function(datas, options){
@@ -104,12 +105,12 @@ define([
         });
 
         this.xAxisLine = this.svg.append("g")
-            .attr("class", "x axis")
+            .attr("class", "xAxis axis")
             .attr("transform", "translate(0,0)")
             .call(this.xAxis);
 
         this.yAxisLine = this.svg.append("g")
-            .attr("class", "y axis")
+            .attr("class", "yAxis axis")
             .call(this.yAxis);
 
     };
@@ -117,11 +118,13 @@ define([
     Heatmap.prototype.Draw = function(){
 
         var self = this;
+        this.time = this.start;
         this.rectangles =
             this.chart.selectAll('g')
                 .data(d3.entries(this.datas))
                 .enter()
                 .append('g')
+                .attr('class', 'heatmap-bar')
                 .attr('id', function (d) {
                     return 'heatBar-' + d.key;
                 })
@@ -161,6 +164,7 @@ define([
                 })
                 .enter()
                 .append('rect')
+                .attr('class', 'heat-rectangle')
                 .attr('x', function (d) {
                     //console.log(self.x(Cesium.JulianDate.toDate(d.value.start)));
                     return self.x(Cesium.JulianDate.toDate(d.value.start));
@@ -192,6 +196,14 @@ define([
                     "' value='"+ d.key + "' " + checked + "/></form>"
             });
 
+        this.referenceLine =  this.chart.append("line")
+            .attr('x1', this.x(this.start))
+            .attr('x2', this.x(this.start))
+            .attr('y1', 0)
+            .attr('y2', this.height)
+            .attr('stroke-width', 3)
+            .attr('stroke', 'black');
+
         $('.brush').change(function(){
             var id = $(this).attr('value');
             if ($(this).is(':checked')){
@@ -204,6 +216,16 @@ define([
             }
         });
 
+        this.rectangles.on('click', function(){
+            self.time  = self.x.invert(d3.mouse(this)[0]);
+            self.timeLine(self.time);
+        });
+
+    };
+
+    Heatmap.prototype.timeLine = function(currentDate){
+        this.referenceLine.attr('transform', "translate(" + this.x(currentDate) + "," + "0)");
+        self.time = currentDate;
     };
 
     Heatmap.prototype.updateColor = function(startColor, stopColor){
