@@ -27,7 +27,7 @@
     width:20%;
 }
 .visualizer-2D{
-    width: 40%;
+    width: 35%;
     height: 80%;
     position: absolute;
     opacity: 0.6;
@@ -36,6 +36,7 @@
 .visualizer-control{
     width: 30%;
     height: 10%;
+    top:0;
     right: 0;
     position: absolute;
     opacity: 0.6;
@@ -78,4 +79,18 @@ div.tooltip {
     left: 0;
     right: 0;
     position: absolute;
+}
+.svg-container {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+.svg-content-responsive {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
 }

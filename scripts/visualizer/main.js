@@ -51,6 +51,7 @@ define([
         this._normalizationParameters = {};
         this._currentDataset = undefined;
         this._customProperties = [];
+        this._planarDrawn = false;
 
         this.slider = noUiSlider.create(document.getElementById('visualizer-slider'),{
             start: [0.0, 100.0],
@@ -468,7 +469,13 @@ define([
                 self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
                 updateMaximum();
                 drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
-                drawPlanarSection();
+                if (self._planarDrawn == false){
+                    drawPlanarSection();
+                    self._planarDrawn = true;
+                }
+                else{
+                    self.planarSection.update("#" + self._startColor, "#" + self._endColor, self._defaultRangeMin, self._defaultRangeMax, self._currentDataset.data, self._defaultEntityCollectionNew)
+                }
                 $('control-normalize').val("None");
             });
 

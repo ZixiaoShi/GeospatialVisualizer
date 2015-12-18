@@ -74,8 +74,9 @@ define([
             .style("opacity", 0);
 
         this.svg = d3.select($(this.container)[0]).append('svg')
-            .attr('width', this.width + this.margin.left + this.margin.right)
-            .attr('height', this.height + this.margin.top + this.margin.bottom)
+            .attr('viewBox', '0 0 ' + (this.width + this.margin.left + this.margin.right) + ' ' + (this.height + this.margin.top + this.margin.bottom))
+            .attr('preserveAspectRatio', "xMinYMin meet")
+            .classed("svg-content-responsive", true)
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
 
