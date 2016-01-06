@@ -1,0 +1,102 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+</style>
+<body>
+<script type="text/javascript" src="https://raw.githubusercontent.com/mourner/suncalc/master/suncalc.js"></script>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 30},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var now = new Date(),
+            start = d3.time.year.floor(now),
+            end = d3.time.year.ceil(now);
+
+    var x = d3.time.scale()
+            .range([0, width])
+            .domain([start, end]);
+
+    var y = d3.scale.linear()
+            .range([height, 0])
+            .domain([-90, 90]);
+
+    var color = d3.scale.linear()
+            .domain([90, 60, 30, 0])
+            .range(['#0AF229', '#F20505']);
+
+    var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient('bottom');
+
+    var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient('left');
+
+    var svg = d3.select('body').append('svg')
+            .attr('width', width + margin.left + margin .right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+
+    var data = {},
+            latitudes = y.ticks(90),
+            days = d3.range(0, 365, 2).map(function (i) { return d3.time.day.offset(start, i); });
+
+
+    for (var i = 0, len = latitudes.length - 1; i < len; i++) {
+        for (var j = 0, len2 = days.length - 1; j < len2; j++) {
+
+            var day1 = days[j],
+                    day2 = days[j + 1],
+                    lat1 = latitudes[i],
+                    lat2 = latitudes[i + 1],
+                    day = new Date((day1.valueOf() + day2.valueOf()) / 2),
+                    lat = (lat1 + lat2) / 2;
+
+            //var solarNoon = SunCalc.getTimes(day, lat, 0).solarNoon;
+            //var altitude = SunCalc.getPosition(solarNoon, lat, 0).altitude * 180 / Math.PI;
+            var altitude = Math.random()*180.0;
+
+            data[day1] = {
+                day1: day1,
+                day2: day2,
+                lat1: lat1,
+                lat2: lat2,
+                altitude: altitude
+            };
+        }
+    }
+
+    console.log(data);
+
+    svg.selectAll('.cell')
+            .data(d3.entries(data))
+            .enter().append('rect')
+            .attr('x', function (d) { return x(d.value.day1); })
+            .attr('y', function (d) { return y(d.value.lat2); })
+            .attr('width', function (d) { return x(d.value.day2) - x(d.value.day1); })
+            .attr('height', function (d) { return y(d.value.lat1) - y(d.value.lat2); })
+            .attr('fill', function (d) { return color(d.value.altitude); });
+
+    svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+    svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+</script>
