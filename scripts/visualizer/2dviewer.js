@@ -27,6 +27,7 @@ define([
         this.margin = {top: 20, right: 20, bottom: 30, left: 30};
         this.ticks = 5.0;
         this.referenceLine = undefined;
+        this.changeTime = new Event('changeTime');
     };
 
     Heatmap.prototype.Initiate= function(datas, options){
@@ -217,10 +218,13 @@ define([
             }
         });
 
+        /*
         this.rectangles.on('click', function(){
-            self.time  = self.x.invert(d3.mouse(this)[0]);
-            self.timeLine(self.time);
+            var time  = self.x.invert(d3.mouse(this)[0]);
+            //console.log(time);
+            self.timeLine(time);
         });
+        */
 
     };
 

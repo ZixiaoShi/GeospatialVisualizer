@@ -306,6 +306,13 @@ define([
             //console.log(self._currentDataset.data);
             self.planarSection.Initiate(self._currentDataset.data);
             self.planarSection.Draw();
+
+            self.planarSection.rectangles.on('click', function(){
+                var time  = self.planarSection.x.invert(d3.mouse(this)[0]);
+                console.log("switch to" + time.toString());
+                self._geospatialSection.viewer.clock.currentTime = Cesium.JulianDate.fromDate(time);
+                //self.timeLine(time);
+            });
         }
 
         var helper = new Cesium.EventHelper();
@@ -514,6 +521,12 @@ define([
             updateMaximum();
             drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
             self.planarSection.update("#" + self._startColor, "#" + self._endColor, self._defaultRangeMin, self._defaultRangeMax, self._currentDataset.data, self._defaultEntityCollectionNew);
+            self.planarSection.rectangles.on('click', function(){
+                var time  = self.planarSection.x.invert(d3.mouse(this)[0]);
+                console.log("switch to" + time.toString());
+                self._geospatialSection.viewer.clock.currentTime = Cesium.JulianDate.fromDate(time);
+                //self.timeLine(time);
+            });
             //console.log(self._currentDataset);
             //console.log(self._defaultRangeMax);
         });
@@ -593,6 +606,7 @@ define([
             for (var key in entity.properties){
                 addinfoLine(key, entity.properties[key]);
             }
+            addsubLevel("Floor Level");
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
         function addinfoLine(key, value){
@@ -607,6 +621,12 @@ define([
                 )
         }
 
+        function addsubLevel(value){
+            $('.visualizer-infobox-table')
+                .append($('<button>',{
+                    text:value
+                }));
+        }
 
         this._customMin.addEventListener('change', function(){
             self.slider.set(this.value, null);
