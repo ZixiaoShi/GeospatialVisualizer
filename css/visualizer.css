@@ -32,6 +32,7 @@
     position: absolute;
     opacity: 0.6;
     background-color: #88AACC;
+    overflow: scroll;
 }
 .visualizer-control{
     width: 30%;
