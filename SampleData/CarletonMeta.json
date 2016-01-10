@@ -30,32 +30,131 @@
         "RealTime" : false
       },
       "Data":{
+        "1":{
+          "url": "SampleData/continuous_data/1_electricity_month.json"
+        },
+        "2":{
+          "url": "SampleData/continuous_data/2_electricity_month.json"
+        },
+        "3":{
+          "url": "SampleData/continuous_data/3_electricity_month.json"
+        },
+        "4":{
+          "url": "SampleData/continuous_data/4_electricity_month.json"
+        },
         "5":{
           "url": "SampleData/continuous_data/5_electricity_month.json"
         },
         "6":{
           "url": "SampleData/continuous_data/6_electricity_month.json"
         },
+        "8":{
+          "url": "SampleData/continuous_data/8_electricity_month.json"
+        },
+        "9":{
+          "url": "SampleData/continuous_data/9_electricity_month.json"
+        },
+        "10":{
+          "url": "SampleData/continuous_data/10_electricity_month.json"
+        },
+        "11":{
+          "url": "SampleData/continuous_data/11_electricity_month.json"
+        },
+        "12":{
+          "url": "SampleData/continuous_data/12_electricity_month.json"
+        },
+        "13":{
+          "url": "SampleData/continuous_data/13_electricity_month.json"
+        },
         "14":{
           "url": "SampleData/continuous_data/14_electricity_month.json"
+        },
+        "15":{
+          "url": "SampleData/continuous_data/15_electricity_month.json"
+        },
+        "16":{
+          "url": "SampleData/continuous_data/16_electricity_month.json"
+        },
+        "17":{
+          "url": "SampleData/continuous_data/17_electricity_month.json"
         },
         "18":{
           "url": "SampleData/continuous_data/18_electricity_month.json"
         },
+        "19":{
+          "url": "SampleData/continuous_data/19_electricity_month.json"
+        },
+        "20":{
+          "url": "SampleData/continuous_data/20_electricity_month.json"
+        },
+        "21":{
+          "url": "SampleData/continuous_data/21_electricity_month.json"
+        },
+        "22":{
+          "url": "SampleData/continuous_data/22_electricity_month.json"
+        },
+        "23":{
+          "url": "SampleData/continuous_data/23_electricity_month.json"
+        },
+        "24":{
+          "url": "SampleData/continuous_data/24_electricity_month.json"
+        },
+        "25":{
+          "url": "SampleData/continuous_data/25_electricity_month.json"
+        },
         "26":{
           "url": "SampleData/continuous_data/26_electricity_month.json"
+        },
+        "27":{
+          "url": "SampleData/continuous_data/27_electricity_month.json"
+        },
+        "28":{
+          "url": "SampleData/continuous_data/28_electricity_month.json"
+        },
+        "29":{
+          "url": "SampleData/continuous_data/29_electricity_month.json"
         },
         "30":{
           "url": "SampleData/continuous_data/30_electricity_month.json"
         },
+        "31":{
+          "url": "SampleData/continuous_data/31_electricity_month.json"
+        },
+        "32":{
+          "url": "SampleData/continuous_data/32_electricity_month.json"
+        },
+        "33":{
+          "url": "SampleData/continuous_data/33_electricity_month.json"
+        },
         "34":{
           "url": "SampleData/continuous_data/34_electricity_month.json"
+        },
+        "35":{
+          "url": "SampleData/continuous_data/35_electricity_month.json"
+        },
+        "36":{
+          "url": "SampleData/continuous_data/36_electricity_month.json"
+        },
+        "37":{
+          "url": "SampleData/continuous_data/37_electricity_month.json"
+        },
+        "38":{
+          "url": "SampleData/continuous_data/38_electricity_month.json"
+        },
+        "39":{
+          "url": "SampleData/continuous_data/39_electricity_month.json"
+        },
+        "40":{
+          "url": "SampleData/continuous_data/40_electricity_month.json"
         },
         "41":{
           "url": "SampleData/continuous_data/41_electricity_month.json"
         },
         "42":{
           "url": "SampleData/continuous_data/42_electricity_month.json"
+        },
+        "43":{
+          "url": "SampleData/continuous_data/43_electricity_month.json"
         },
         "44":{
           "url": "SampleData/continuous_data/44_electricity_month.json"

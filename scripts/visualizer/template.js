@@ -94,7 +94,6 @@ define(
             .append($('<div>')
                 .addClass('visualizer-2D')
                 .attr('id', '2DSection')
-
             )
             .append($('<div>', {
                 class: 'visualizer-infobox',
