@@ -80,8 +80,8 @@ define([
         }
 
         this.initiate = function(geojsonURL, fileFormat, extrudeBool, metaUrl){
-            $.when(LoadEntities(geojsonURL,fileFormat, extrudeBool)).done(function(){
-               self.LoadMeta(metaUrl);
+            $.when(self.LoadMeta(metaUrl)).done(function(){
+               self.LoadEntities(geojsonURL,fileFormat, extrudeBool);
             });
             /*
             $.when(this.LoadEntities(geojsonURL,fileFormat, extrudeBool)).done(
@@ -575,7 +575,7 @@ define([
 
                 var parameter = 1.0 ;
                 if (normalization !== "None" && entity.properties[normalization] !== undefined){
-                    parameter = parseFloat(entity.properties[normalization])
+                    parameter = parseFloat(entity.properties[normalization]);
                 }
                 $.each(data.timeInterval.intervals._intervals, function(i, interval){
                     var value;
