@@ -14,7 +14,7 @@ define([
 		var self = this;
 		//Create Cesium Container
 		this.viewer = new Cesium.Viewer(container,{
-			//imageryProvider : new Cesium.OpenStreetMapImageryProvider(),
+			imageryProvider : new Cesium.OpenStreetMapImageryProvider(),
 			baseLayerPicker : false,
 			geoCoder: false,
 			animation: true,

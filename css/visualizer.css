@@ -3,6 +3,9 @@
     width: 100%;
     z-index: -1;
     position: absolute;
+    left: 0px;
+    top: 0px;
+    margin: 0;
 }
 .visualizer-legend{
     height: 8%;
@@ -33,6 +36,9 @@
     opacity: 0.6;
     background-color: #88AACC;
     overflow: scroll;
+}
+#visualizer-2D-svg{
+    margin-top: 30px;
 }
 .visualizer-control{
     width: 30%;

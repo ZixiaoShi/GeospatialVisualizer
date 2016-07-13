@@ -38,6 +38,7 @@ define([
         this.names = [];
         for (var key in datas) {
             this.names.push(datas[key].name);
+            //console.log(datas[key].name);
         }
 
         this.ids = Object.keys(datas);
@@ -77,6 +78,7 @@ define([
         this.svg = d3.select($(this.container)[0]).append('svg')
             .attr('viewBox', '0 0 ' + (this.width + this.margin.left + this.margin.right) + ' ' + (this.height + this.margin.top + this.margin.bottom))
             .attr('preserveAspectRatio', "xMinYMin meet")
+            .attr('id', 'visualizer-2D-svg')
             .classed("svg-content-responsive", true)
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
@@ -87,14 +89,17 @@ define([
             .attr('height', this.height);
 
         this.buttons = $(this.container)
-            .prepend($('<input>')
-                .attr('type', 'button')
-                .attr('id', 'visualizer-brusher-show')
-                .attr('value', 'ShowAll'))
-            .prepend($('<input>')
-                .attr('type', 'button')
-                .attr('id', 'visualizer-brusher-hide')
-                .attr('value', 'HideAll'));
+            .prepend($('<div>')
+                .attr('id', 'visualizer-2d-control')
+                .prepend($('<input>')
+                    .attr('type', 'button')
+                    .attr('id', 'visualizer-brusher-show')
+                    .attr('value', 'Show All'))
+                .prepend($('<input>')
+                    .attr('type', 'button')
+                    .attr('id', 'visualizer-brusher-hide')
+                    .attr('value', 'Hide All'))
+        );
 
         $('#visualizer-brusher-hide').on('click', function(){
             $('.brush').prop('checked', false)
@@ -145,14 +150,14 @@ define([
                 .attr('transform', function (d) {
                     return 'translate(' + 0 + ',' + self.y(d.value.name) + ')'
                 })
-                .on('mouseover', function (d) {
+                .on('mouseenter', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
                     if (entity.highlight == true) {
                         return;
                     }
                     entity.highLight(true);
                 })
-                .on('mouseout', function (d) {
+                .on('mouseleave', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
                     if (entity.highlight == false) {
                         return;
