@@ -135,7 +135,7 @@ define([
         var sortBars = function(){
             this.sortOrder = ! this.sortOrder;
 
-            var time = this.time;
+            var time = Cesium.JulianDate.fromDate(this.time);
             console.log(time);
 
             var y0 = self.y.domain(self.datasNew.sort(this.sortOrder
