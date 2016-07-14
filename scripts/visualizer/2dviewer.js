@@ -54,7 +54,7 @@ define([
         this.width = 700.0 - this.margin.left - this.margin.right;
         this.height = (this.barHeight + 2.0 * this.barMargin) * this.ids.length - this.margin.top - this.margin.bottom;
 
-        this.startColor = (typeof options.startColor === 'undefined') ? '#d8d8d8' : options.startColor;
+        this.startColor = (typeof options.startColor === 'undefined') ? '#0AF229' : options.startColor;
         this.stopColor = (typeof options.stopColor === 'undefined') ? '#F20505' : options.stopColor;
 
         this.x = d3.time.scale()
@@ -135,7 +135,7 @@ define([
         var sortBars = function(){
             this.sortOrder = ! this.sortOrder;
 
-            var time = Cesium.JulianDate.fromDate(this.time);
+            var time = this.time;
             console.log(time);
 
             var y0 = self.y.domain(self.datasNew.sort(this.sortOrder
@@ -145,12 +145,15 @@ define([
                 .map(function(d) { return d.name; }))
                 .copy();
 
+
+            self.svg.selectAll('.heatmap-bar')
+                .sort(function(a, b) { return y0(a.value.name) - y0(b.value.name);});
+
             var transition = self.svg.transition().duration(750),
                 delay = function(d, i) { return i * 50; };
 
 
             transition.selectAll(".heatmap-bar")
-                .sort(function(a, b) { return y0(a.value.name) - y0(b.value.name);})
                 .delay(delay)
                 .attr("y", function(d) {return y0(d.value.name); })
                 .attr('transform', function (d) {
@@ -191,7 +194,7 @@ define([
     };
 
     Heatmap.prototype.Draw = function(){
-        $('.visualizer-2D').show();
+
         var self = this;
         this.time = this.start;
         this.rectangles =
