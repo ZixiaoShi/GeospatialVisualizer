@@ -43,6 +43,13 @@ define([
             //console.log(datas[key].name);
         }
 
+        this.datasNew = [];
+        for (var key in datas){
+            this.datasNew.push(datas[key]);
+        }
+
+        console.log(this.datasNew);
+
         this.ids = Object.keys(datas);
         this.width = 700.0 - this.margin.left - this.margin.right;
         this.height = (this.barHeight + 2.0 * this.barMargin) * this.ids.length - this.margin.top - this.margin.bottom;
@@ -122,21 +129,46 @@ define([
         });
 
         $('#visualizer-2D-sort').on('click', function(){
-            self.sortOrder = ! self.sortOrder;
+            sortBars();
+        });
+
+        var sortBars = function(){
+            this.sortOrder = ! this.sortOrder;
+
+            var time = this.time;
+            console.log(time);
+
+            var y0 = self.y.domain(self.datasNew.sort(this.sortOrder
+                    ? function(a, b) {
+                return d3.ascending(a.getValue(time), b.getValue(time)); }
+                    : function(a, b) { return d3.ascending(a.getValue(time), b.getValue(time)); })
+                .map(function(d) { return d.name; }))
+                .copy();
+
 
             self.svg.selectAll('.heatmap-bar')
-                .sort(sortItems)
-                .transition()
-                .duration(1000)
-                .attr("y", function(d,i){
-                    //console.log(d);
-                    //console.log(self.y(d.value.name));
-                    return self.y_ordinal(i);
-                })
-                .attr('transform', function (d,i) {
-                    return 'translate(' + 0 + ',' + self.y_ordinal(i) + ')'
-                })
-        });
+                .sort(function(a, b) { return y0(a.value.name) - y0(b.value.name);});
+
+            var transition = self.svg.transition().duration(750),
+                delay = function(d, i) { return i * 50; };
+
+
+            transition.selectAll(".heatmap-bar")
+                .delay(delay)
+                .attr("y", function(d) {return y0(d.value.name); })
+                .attr('transform', function (d) {
+                    return 'translate(' + 0 + ',' + y0(d.value.name) + ')'
+                });
+
+            transition.select(".yAxis")
+                .call(self.yAxis)
+                .selectAll("g")
+                .delay(delay);
+
+            transition.selectAll(".brush-checkbox")
+                .delay(delay)
+                .attr("y", function(d) {return y0(d.value.name); });
+        }
 
 
         var sortItems = function(a, b){
@@ -197,6 +229,7 @@ define([
                     if (entity.highlight == true) {
                         return;
                     }
+
                     entity.highLight(true);
                 })
                 .on('mouseleave', function (d) {
@@ -273,6 +306,7 @@ define([
             var time  = self.x.invert(d3.mouse(this)[0]);
             //console.log(time);
             self.timeLine(time);
+            this.time = time;
         });
         */
 
