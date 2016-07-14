@@ -119,6 +119,9 @@ define([
                     if (extrudeBool == true){
                         GeospatialSection.extrudeEntity(cesiumEntity);
                     }
+                    else{
+                        GeospatialSection.extrudeEntityDefault(cesiumEntity,10);
+                    }
                     self._defaultEntityCollectionNew.AddCesiumEntity(cesiumEntity, self._customProperties);
                 }
                 console.log(self._defaultEntityCollectionNew);
@@ -613,11 +616,11 @@ define([
             var unit = self._defaultVariableCollection.getCurrentVariable().unit;
             //console.log(entity.name);
             addinfoLine('Name', entity.name);
-            addinfoLine('Current Value', entity.value + unit);
+            addinfoLine('Current Value', Math.round(entity.value*1000)/1000 + unit);
             for (var key in entity.properties){
                 addinfoLine(key, entity.properties[key]);
             }
-            addsubLevel("Floor Level");
+            //addsubLevel("Floor Level");
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
         function addinfoLine(key, value){

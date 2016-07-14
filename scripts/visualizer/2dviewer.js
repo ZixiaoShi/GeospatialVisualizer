@@ -28,10 +28,12 @@ define([
         this.ticks = 5.0;
         this.referenceLine = undefined;
         this.changeTime = new Event('changeTime');
+        this.sortOrder = false;
     };
 
     Heatmap.prototype.Initiate= function(datas, options){
 
+        var self = this;
         if (typeof options === 'undefined'){options = {}; }
         this.datas = datas;
 
@@ -55,6 +57,10 @@ define([
         this.y = d3.scale.ordinal()
             .rangeRoundBands([this.height, 0], .1, .2)
             .domain(this.names);
+
+        this.y_ordinal = d3.scale.ordinal()
+            .rangeRoundBands([this.height, 0], .1, .2)
+            .domain(d3.range(this.names.length));
 
         this.color = d3.scale.linear()
             .domain([this.lowerLimit, this.upperLimit])
@@ -93,6 +99,10 @@ define([
                 .attr('id', 'visualizer-2d-control')
                 .prepend($('<input>')
                     .attr('type', 'button')
+                    .attr('id', 'visualizer-2D-sort')
+                    .attr('value', 'Sort'))
+                .prepend($('<input>')
+                    .attr('type', 'button')
                     .attr('id', 'visualizer-brusher-show')
                     .attr('value', 'Show All'))
                 .prepend($('<input>')
@@ -110,6 +120,35 @@ define([
             $('.brush').prop('checked', true)
                 .trigger('change');
         });
+
+        $('#visualizer-2D-sort').on('click', function(){
+            self.sortOrder = ! self.sortOrder;
+
+            self.svg.selectAll('.heatmap-bar')
+                .sort(sortItems)
+                .transition()
+                .duration(1000)
+                .attr("y", function(d,i){
+                    //console.log(d);
+                    //console.log(self.y(d.value.name));
+                    return self.y_ordinal(i);
+                })
+                .attr('transform', function (d,i) {
+                    return 'translate(' + 0 + ',' + self.y_ordinal(i) + ')'
+                })
+        });
+
+
+        var sortItems = function(a, b){
+            if (self.sortOrder){
+                //console.log(a.value.getValue(a.value.getValue(self.time) - b.value.getValue(self.time)));
+                return d3.ascending(a.value.getValue(self.time), b.value.getValue(self.time));
+            }
+            else{
+                return d3.descending(a.value.getValue(self.time), b.value.getValue(self.time));
+            }
+
+        };
 
         this.xAxisLine = this.svg.append("g")
             .attr("class", "xAxis axis")
@@ -152,6 +191,9 @@ define([
                 })
                 .on('mouseenter', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
+                    if (entity == null){
+                        return;
+                    }
                     if (entity.highlight == true) {
                         return;
                     }
@@ -159,6 +201,9 @@ define([
                 })
                 .on('mouseleave', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
+                    if (entity == null){
+                        return;
+                    }
                     if (entity.highlight == false) {
                         return;
                     }
@@ -233,10 +278,12 @@ define([
 
     };
 
+
     Heatmap.prototype.timeLine = function(currentDate){
         this.referenceLine.attr('transform', "translate(" + this.x(currentDate) + "," + "0)");
         self.time = currentDate;
     };
+
 
     Heatmap.prototype.updateColor = function(startColor, stopColor){
         this.startColor = startColor;
@@ -302,6 +349,8 @@ define([
 
         this.Draw()
     };
+
+
 
 
     return {
