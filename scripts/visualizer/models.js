@@ -73,14 +73,24 @@ function(
 		this.highlight = input;
 		if (input == true){
 			$.each(this.cesiumEntities, function(key,cesiumEntity){
-				cesiumEntity.polygon.outline=true;
-				cesiumEntity.polygon.outlineColor = Cesium.Color.BLACK;
+				try{
+					cesiumEntity.polygon.outline=true;
+					cesiumEntity.polygon.outlineColor = Cesium.Color.BLACK;
+				}
+				catch(err){
+					console.log("highlighting failed");
+				}
 			});
 		}
 		else if (input == false){
 			$.each(this.cesiumEntities, function(key,cesiumEntity){
-				cesiumEntity.polygon.outline=false;
-				cesiumEntity.polygon.outlineColor = Cesium.Color.BLACK;
+				try{
+					cesiumEntity.polygon.outline=false;
+					cesiumEntity.polygon.outlineColor = Cesium.Color.BLACK;
+				}
+				catch(err){
+					console.log("deHighlighting failed!");
+				}
 			});
 		}
 	};
