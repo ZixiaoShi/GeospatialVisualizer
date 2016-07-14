@@ -14,7 +14,7 @@ define([
 		var self = this;
 		//Create Cesium Container
 		this.viewer = new Cesium.Viewer(container,{
-			//imageryProvider : new Cesium.OpenStreetMapImageryProvider(),
+			imageryProvider : new Cesium.OpenStreetMapImageryProvider(),
 			baseLayerPicker : false,
 			geoCoder: false,
 			animation: true,
@@ -54,9 +54,22 @@ define([
 		}
     };
 
+	var extrudeEntityDefault = function(entity, height){
+		//utilities.changeAlpha(entity, 'FFFFFF', 1.0);
+		try{
+			entity.polygon.material = Cesium.Color.WHITE;
+			entity.polygon.outline = false;
+			entity.polygon.extrudedHeight = height;
+		}
+		catch(exp) {
+			console.log(exp);
+		}
+	};
+
 
 	return{
 		GeospatialSection: GeospatialSection,
-        extrudeEntity: extrudeEntity
+        extrudeEntity: extrudeEntity,
+		extrudeEntityDefault: extrudeEntityDefault
 	};
 });

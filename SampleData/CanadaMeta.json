@@ -1,0 +1,53 @@
+{
+  "Entities": {
+
+  },
+  "Variables": {
+    "Electricity":"GWh"
+  },
+  "Custom_Properties": [
+      "Households"
+    ],
+  "Normalization":{
+      "Households": "Households"
+	},
+  "Electricity":{
+    "Total":{
+      "Settings":{
+        "RealTime" : false
+      },
+      "Data":{
+        "CA.BC":{
+          "url": "SampleData/CanadaData/BC.json"
+        },
+        "CA.AB":{
+          "url": "SampleData/CanadaData/AB.json"
+        },
+        "CA.NL":{
+          "url": "SampleData/CanadaData/NL.json"
+        },
+        "CA.SK":{
+          "url": "SampleData/CanadaData/SK.json"
+        },
+        "CA.MB":{
+          "url": "SampleData/CanadaData/MB.json"
+        },
+        "CA.QC":{
+          "url": "SampleData/CanadaData/QC.json"
+        },
+        "CA.ON":{
+          "url": "SampleData/CanadaData/ON.json"
+        },
+        "CA.NB":{
+          "url": "SampleData/CanadaData/NB.json"
+        },
+        "CA.NS":{
+          "url": "SampleData/CanadaData/NS.json"
+        },
+        "CA.PE":{
+          "url": "SampleData/CanadaData/PE.json"
+        }
+      }
+    }
+  }
+}

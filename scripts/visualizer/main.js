@@ -119,6 +119,9 @@ define([
                     if (extrudeBool == true){
                         GeospatialSection.extrudeEntity(cesiumEntity);
                     }
+                    else{
+                        GeospatialSection.extrudeEntityDefault(cesiumEntity,10);
+                    }
                     self._defaultEntityCollectionNew.AddCesiumEntity(cesiumEntity, self._customProperties);
                 }
                 console.log(self._defaultEntityCollectionNew);
@@ -476,6 +479,10 @@ define([
                 self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
                 updateMaximum();
                 drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
+                $('control-normalize').val("None");
+                normalizeCurrentData();
+
+
                 if (self._planarDrawn == false){
                     drawPlanarSection();
                     self._planarDrawn = true;
@@ -483,7 +490,8 @@ define([
                 else{
                     self.planarSection.update("#" + self._startColor, "#" + self._endColor, self._defaultRangeMin, self._defaultRangeMax, self._currentDataset.data, self._defaultEntityCollectionNew)
                 }
-                $('control-normalize').val("None");
+
+
             });
 
         }
@@ -570,12 +578,18 @@ define([
                     parameter = parseFloat(entity.properties[normalization]);
                 }
                 $.each(data.timeInterval.intervals._intervals, function(i, interval){
-                    var value = parseFloat(interval.data)/parameter;
-                    if (newdata.maximum == undefined || value > newdata.maximum){
-                        newdata.maximum = value;
+                    var value;
+                    if (parameter == 0.0){
+                        value = parseFloat(interval.data);
                     }
-                    if (newdata.minimum == undefined || value < newdata.minimum){
-                        newdata.minimum = value;
+                    else{
+                        value = parseFloat(interval.data)/parameter;
+                        if (newdata.maximum == undefined || value > newdata.maximum){
+                            newdata.maximum = value;
+                        }
+                        if (newdata.minimum == undefined || value < newdata.minimum){
+                            newdata.minimum = value;
+                        }
                     }
                     newdata.timeInterval.intervals.addInterval(new Cesium.TimeInterval({
                         start: interval.start,
@@ -600,13 +614,13 @@ define([
             //entity.changeAvailability(true);
             $('.visualizer-infobox-table').html('');
             var unit = self._defaultVariableCollection.getCurrentVariable().unit;
-            console.log(entity.name);
+            //console.log(entity.name);
             addinfoLine('Name', entity.name);
-            addinfoLine('Current Value', entity.value + unit);
+            addinfoLine('Current Value', Math.round(entity.value*1000)/1000 + unit);
             for (var key in entity.properties){
                 addinfoLine(key, entity.properties[key]);
             }
-            addsubLevel("Floor Level");
+            //addsubLevel("Floor Level");
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
         function addinfoLine(key, value){

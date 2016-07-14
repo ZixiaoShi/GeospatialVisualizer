@@ -28,16 +28,19 @@ define([
         this.ticks = 5.0;
         this.referenceLine = undefined;
         this.changeTime = new Event('changeTime');
+        this.sortOrder = false;
     };
 
     Heatmap.prototype.Initiate= function(datas, options){
 
+        var self = this;
         if (typeof options === 'undefined'){options = {}; }
         this.datas = datas;
 
         this.names = [];
         for (var key in datas) {
             this.names.push(datas[key].name);
+            //console.log(datas[key].name);
         }
 
         this.ids = Object.keys(datas);
@@ -54,6 +57,10 @@ define([
         this.y = d3.scale.ordinal()
             .rangeRoundBands([this.height, 0], .1, .2)
             .domain(this.names);
+
+        this.y_ordinal = d3.scale.ordinal()
+            .rangeRoundBands([this.height, 0], .1, .2)
+            .domain(d3.range(this.names.length));
 
         this.color = d3.scale.linear()
             .domain([this.lowerLimit, this.upperLimit])
@@ -77,6 +84,7 @@ define([
         this.svg = d3.select($(this.container)[0]).append('svg')
             .attr('viewBox', '0 0 ' + (this.width + this.margin.left + this.margin.right) + ' ' + (this.height + this.margin.top + this.margin.bottom))
             .attr('preserveAspectRatio', "xMinYMin meet")
+            .attr('id', 'visualizer-2D-svg')
             .classed("svg-content-responsive", true)
             .append('g')
             .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
@@ -87,14 +95,21 @@ define([
             .attr('height', this.height);
 
         this.buttons = $(this.container)
-            .prepend($('<input>')
-                .attr('type', 'button')
-                .attr('id', 'visualizer-brusher-show')
-                .attr('value', 'ShowAll'))
-            .prepend($('<input>')
-                .attr('type', 'button')
-                .attr('id', 'visualizer-brusher-hide')
-                .attr('value', 'HideAll'));
+            .prepend($('<div>')
+                .attr('id', 'visualizer-2d-control')
+                .prepend($('<input>')
+                    .attr('type', 'button')
+                    .attr('id', 'visualizer-2D-sort')
+                    .attr('value', 'Sort'))
+                .prepend($('<input>')
+                    .attr('type', 'button')
+                    .attr('id', 'visualizer-brusher-show')
+                    .attr('value', 'Show All'))
+                .prepend($('<input>')
+                    .attr('type', 'button')
+                    .attr('id', 'visualizer-brusher-hide')
+                    .attr('value', 'Hide All'))
+        );
 
         $('#visualizer-brusher-hide').on('click', function(){
             $('.brush').prop('checked', false)
@@ -105,6 +120,35 @@ define([
             $('.brush').prop('checked', true)
                 .trigger('change');
         });
+
+        $('#visualizer-2D-sort').on('click', function(){
+            self.sortOrder = ! self.sortOrder;
+
+            self.svg.selectAll('.heatmap-bar')
+                .sort(sortItems)
+                .transition()
+                .duration(1000)
+                .attr("y", function(d,i){
+                    //console.log(d);
+                    //console.log(self.y(d.value.name));
+                    return self.y_ordinal(i);
+                })
+                .attr('transform', function (d,i) {
+                    return 'translate(' + 0 + ',' + self.y_ordinal(i) + ')'
+                })
+        });
+
+
+        var sortItems = function(a, b){
+            if (self.sortOrder){
+                //console.log(a.value.getValue(a.value.getValue(self.time) - b.value.getValue(self.time)));
+                return d3.ascending(a.value.getValue(self.time), b.value.getValue(self.time));
+            }
+            else{
+                return d3.descending(a.value.getValue(self.time), b.value.getValue(self.time));
+            }
+
+        };
 
         this.xAxisLine = this.svg.append("g")
             .attr("class", "xAxis axis")
@@ -145,15 +189,21 @@ define([
                 .attr('transform', function (d) {
                     return 'translate(' + 0 + ',' + self.y(d.value.name) + ')'
                 })
-                .on('mouseover', function (d) {
+                .on('mouseenter', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
+                    if (entity == null){
+                        return;
+                    }
                     if (entity.highlight == true) {
                         return;
                     }
                     entity.highLight(true);
                 })
-                .on('mouseout', function (d) {
+                .on('mouseleave', function (d) {
                     var entity = self.entityCollection.getEntity(d.key);
+                    if (entity == null){
+                        return;
+                    }
                     if (entity.highlight == false) {
                         return;
                     }
@@ -228,10 +278,12 @@ define([
 
     };
 
+
     Heatmap.prototype.timeLine = function(currentDate){
         this.referenceLine.attr('transform', "translate(" + this.x(currentDate) + "," + "0)");
         self.time = currentDate;
     };
+
 
     Heatmap.prototype.updateColor = function(startColor, stopColor){
         this.startColor = startColor;
@@ -297,6 +349,8 @@ define([
 
         this.Draw()
     };
+
+
 
 
     return {
