@@ -42,7 +42,7 @@ define([
         this._defaultTimeMax = undefined;
         this._defaultAlpha = 0.8;
 
-        this._startColor = '0AF229';
+        this._startColor = 'd8d8d8';
         this._endColor = 'F20505';
 
         this._defaultDatasetCollection = new models.DatasetCollection();
@@ -281,6 +281,7 @@ define([
         }
 
         function drawLegend(colorMin, colorMax, rangeMin, rangeMax){
+            $('.visualizer-legend').show();
             var ctx = document.getElementById("visualizer-legend-canvas").getContext("2d");
             ctx.clearRect(0, 0, 400, 70);
             var grd = ctx.createLinearGradient(0, 0, 400, 0);
@@ -439,24 +440,24 @@ define([
 
         function drawLegend(colorMin, colorMax, rangeMin, rangeMax){
             var ctx = document.getElementById("visualizer-legend-canvas").getContext("2d");
-            ctx.clearRect(0, 0, 400, 70);
+            ctx.clearRect(0, 0, 400, 50);
             var grd = ctx.createLinearGradient(0, 0, 400, 0);
             grd.addColorStop(0, "#"+colorMin);
             grd.addColorStop(1, "#"+colorMax);
             ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.fillRect(0,0,400,70);
+            ctx.fillRect(0,0,400,50);
             ctx.fillStyle = grd;
-            ctx.fillRect(0, 0, 400, 40);
+            ctx.fillRect(0, 0, 400, 20);
             ctx.font = "15px Arial";
             var unit = "";
             if(self._defaultVariableCollection.getCurrentVariable() !== undefined){
                 unit = self._defaultVariableCollection.getCurrentVariable().unit;
             };
-            ctx.fillText(rangeMin + unit,1,60);
+            ctx.fillText(rangeMin + unit,1,40);
             ctx.textAlign = "center";
-            ctx.fillText((((rangeMin+rangeMax)/2)).toString() + unit, 200, 60);
+            ctx.fillText((((rangeMin+rangeMax)/2)).toString() + unit, 200, 40);
             ctx.textAlign = "right";
-            ctx.fillText(rangeMax + unit,399,60);
+            ctx.fillText(rangeMax + unit,399,40);
             //console.log("legend draw complete");
         }
 
@@ -478,6 +479,7 @@ define([
             readProcess.done(function(){
                 self._currentDataset = self._defaultDatasetCollection.getCurrentDataset(self._defaultVariableCollection.getCurrentVariable());
                 updateMaximum();
+                $('.visualizer-legend').show();
                 drawLegend(self._startColor, self._endColor, self._defaultRangeMin, self._defaultRangeMax);
                 $('control-normalize').val("None");
                 normalizeCurrentData();
@@ -498,6 +500,10 @@ define([
 
         $('#control-dataset-confirm').on('click', function(){
             changeDataset();
+        });
+
+        $('.visualizer-control-infoToggle').on('click', function(){
+            $('.visualizer-infobox').toggle();
         });
 
         $('#control-variable').on('change', function(){
