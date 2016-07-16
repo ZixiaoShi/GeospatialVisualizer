@@ -12,16 +12,8 @@ define(
 
             .append($('<div>')
                 .addClass('visualizer-legend')
+                .hide()
                 .attr('id', 'legend')
-                .append($('<canvas>')
-                    .attr('id', 'visualizer-legend-canvas')
-                    .attr('width', '400px')
-                    .attr('height', '70px')
-                )
-                .append($('<div>',{
-                    id: 'visualizer-slider',
-                    class: 'visualizer-slider'
-                }))
                 .append($('<form>')
                     .addClass('visualizer-customize')
                     .append($('<input>')
@@ -52,10 +44,29 @@ define(
                         .attr('id', 'customRange')
                         .attr('value', 'Keep Range')
                         .prop('checked', false))
-            ))
+                )
+                .append($('<canvas>')
+                    .attr('id', 'visualizer-legend-canvas')
+                    .attr('width', '400px')
+                    .attr('height', '50px')
+                )
+                .append($('<div>',{
+                    id: 'visualizer-slider',
+                    class: 'visualizer-slider'
+                }))
+            )
             .append($('<div>')
                 .addClass('visualizer-control')
+                .append($('<h4>',{
+                    text: 'User Control'
+                })
+                    .addClass('visualizer-ui-header')
+                )
+                .append($('<hr>')
+                    .addClass('visualizer-ui-header-hr')
+                )
                 .append($('<span>')
+                    .addClass('visualizer-control-span')
                     .append($('<label>',{
                         text: 'Variable: '
                     }))
@@ -64,6 +75,7 @@ define(
                 )
                 .append($('<br>'))
                 .append($('<span>')
+                    .addClass('visualizer-control-span')
                     .append($('<label>',{
                         text: 'Dataset: '
                     }))
@@ -71,11 +83,12 @@ define(
                         .attr('id', 'control-dataset'))
                     .append($('<button>',{
                         id: 'control-dataset-confirm',
-                        text: 'Change Dataset'
+                        text: 'Load Dataset'
                     }))
                 )
-                .append($('<br>'))
+                .append($('<hr>'))
                 .append($('<span>')
+                    .addClass('visualizer-control-span')
                     .append($('<label>',{
                         text: 'Normalization by: '
                     }))
@@ -84,21 +97,37 @@ define(
                 )
                 .append($('<br>'))
                 .append($('<span>')
+                    .addClass('visualizer-control-span')
                     .append($('<label>',{
                         text: 'Category to display: '
                     }))
                     .append($('<select>')
                         .attr('id', 'control-category'))
                 )
+                .append($('<br>'))
+                .append($('<span>')
+                    .addClass('visualizer-control-span')
+                    .append($('<input type="checkbox">',{
+                    })
+                        .addClass('visualizer-control-infoToggle')
+                    )
+                    .append($('<label>',{
+                        text: 'Show InfoBox'
+                    })
+                        .css('float', 'right')
+                        .css('margin-top', '10px'))
+                )
             )
             .append($('<div>')
                 .addClass('visualizer-2D')
                 .attr('id', '2DSection')
+                .hide()
             )
             .append($('<div>', {
                 class: 'visualizer-infobox',
                 id: 'visualizer-infobox'
             })
+                .hide()
                 .append($('<table>',{
                     class: 'visualizer-infobox-table',
                     id: 'visualizer-infobox-table'

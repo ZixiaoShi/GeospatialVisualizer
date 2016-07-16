@@ -24,6 +24,8 @@ define([
 			scene3DOnly: false,
 			timeline: true,
 			useDefaultRenderLoop:true,
+			homeButton: false,
+
 		});
 		var helper = new Cesium.EventHelper();
 		//helper.add(this.viewer.clock.onTick, tickUpdate, this);

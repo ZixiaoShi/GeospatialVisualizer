@@ -11,7 +11,7 @@
     height: 8%;
     width: 50%;
     z-index: 1;
-    margin-left: auto;
+    margin-left: 53%;
     margin-right: auto;
     left: 0;
     right: 0;
@@ -33,23 +33,35 @@
     width: 35%;
     height: 80%;
     position: absolute;
-    opacity: 0.6;
-    background-color: #88AACC;
+    left:65%;
+    top:15%;
+    opacity: 0.8;
+    background-color: #ffffff;
     overflow: scroll;
 }
 #visualizer-2D-svg{
     margin-top: 30px;
+    opacity: 1.0;
 }
 .visualizer-control{
-    width: 30%;
-    height: 10%;
-    top:0;
-    right: 0;
+    width: 20%;
+    height: 155px;
+    top:5px;
+    left:0;
     position: absolute;
-    opacity: 0.6;
-    background-color: #88AACC;
+    opacity: 0.8;
+    background-color: #c1c4c7;
 }
-
+.visualizer-control-span{
+    position:relative;
+    top: 5px;
+    left: 5px;
+    bottom: 0px;
+}
+.visualizer-control-infoToggle{
+    margin-top:10px;
+    float:right;
+}
 .axis path,
 .axis line {
     fill: none;
@@ -72,14 +84,19 @@ div.tooltip {
 .visualizer-infobox{
     width: 20%;
     height: 40%;
-    right: 0;
-    top: 10%;
+    left: 0;
+    top: 160px;
     position: absolute;
-    opacity: 0.6;
-    background-color: #88AACC;
+    opacity: 0.8;
+    background-color: #ffffff;
+}
+.visualizer-infobox-table{
+    margin-top: 10px;
+    margin-left: 20px;
+    border-spacing: 4px;
 }
 .visualizer-slider{
-    width: 40%;
+    width: 400px;
     z-index: 1;
     margin-left: auto;
     margin-right: auto;
@@ -100,4 +117,19 @@ div.tooltip {
     position: absolute;
     top: 0;
     left: 0;
+}
+.noUi-connect{
+    background-color: #c1c4c7;
+}
+.visualizer-ui-header {
+    margin-left: 3px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    font-weight: bold;
+}
+.visualizer-ui-header-hr {
+    margin-left: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-weight: bold;
 }
