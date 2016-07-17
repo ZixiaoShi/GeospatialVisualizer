@@ -1,5 +1,6 @@
 /**
  * Created by freeze on 2015-11-08.
+ * this is the CSS file for the visualization tool and its user interfaces
  */
 define(
     function(){
